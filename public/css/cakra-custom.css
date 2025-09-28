@@ -1,0 +1,23 @@
+/* CAKRA custom theme - blue & yellow accents */
+:root{
+  --cakra-blue: #0b61ff;    /* primary blue */
+  --cakra-yellow: #ffbf00;  /* accent yellow */
+  --muted: #6b7280;
+}
+
+/* small tweaks */
+body { background-color: #f6f8fb; color: #0f172a; }
+.navbar-brand { font-weight: 700; color: var(--cakra-blue); }
+.sidebar { background: #ffffff; border-right: 1px solid #e6eefb; }
+.card-cakra { border-left: 4px solid var(--cakra-blue); }
+.btn-cakra { background: linear-gradient(90deg,var(--cakra-blue),#085ef8); color:#fff; }
+.badge-yellow { background: var(--cakra-yellow); color:#102a43; font-weight:600; }
+.card-stat { background: linear-gradient(180deg, #fff, #fbfcff); border: 1px solid #e7f0ff; }
+
+/* table */
+.table thead th { color: var(--muted); font-weight:600; }
+
+/* small responsive */
+@media (max-width: 992px){
+  .sidebar { display:none; }
+}
