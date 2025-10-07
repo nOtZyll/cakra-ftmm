@@ -29,41 +29,6 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 */
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
-/*
-|--------------------------------------------------------------------------
-| Auth Routes (Login & Register Dummy)
-|--------------------------------------------------------------------------
-*/
-Route::get('/login', fn () => view('auth.login'))->name('login');
-
-Route::post('/login', function (Request $request) {
-    $role = $request->input('role', 'mahasiswa');
-
-    return match ($role) {
-        'mahasiswa'     => redirect()->route('mahasiswa.dashboard'),
-        'staf_ormawa'   => redirect()->route('staf_ormawa.dashboard'),
-        'staf_fakultas' => redirect()->route('staf_fakultas.dashboard'),
-        'stakeholder'   => redirect()->route('stakeholder.dashboard'),
-        'admin'         => redirect()->route('landing')->with('success', 'Login admin belum diimplementasi.'),
-        default         => redirect()->route('landing'),
-    };
-})->name('login.post');
-
-Route::get('/register', fn () => view('auth.register'))->name('register');
-
-Route::post('/register', function (Request $request) {
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required|min:6',
-        'password_confirmation' => 'required|same:password',
-        'role' => 'required',
-    ]);
-
-    return redirect()->route('login')
-        ->with('success', 'Berhasil daftar, silakan login!');
-})->name('register.post');
-
-Route::post('/logout', fn () => redirect()->route('landing'))->name('logout');
 
 
 /*
