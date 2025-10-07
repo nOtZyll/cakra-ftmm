@@ -559,56 +559,34 @@
             100% { transform: scale(1); }
         }
     </style>
-</head>
+
 <body>
     <!-- Menu Toggle untuk Mobile -->
     <button class="menu-toggle material-icons" id="menuToggle">menu</button>
-
-    <!-- Modal untuk konfirmasi navigasi -->
-    <div class="modal" id="navigationModal">
-        <div class="modal-content">
-            <h3 id="modalTitle">Konfirmasi Navigasi</h3>
-            <p id="modalMessage">Anda akan diarahkan ke halaman tertentu.</p>
-            <div class="modal-buttons">
-                <button class="modal-btn secondary" id="modalCancel">Batal</button>
-                <button class="modal-btn primary" id="modalConfirm">Lanjutkan</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="logo">
             <h1>CAKRA</h1>
         </div>
-        <a href="#" class="nav-item" data-page="dashboard">
+        {{-- PERUBAHAN 1: Menggunakan route() helper untuk navigasi --}}
+        <a href="{{ route('mahasiswa.dashboard') }}" class="nav-item {{ request()->routeIs('mahasiswa.dashboard') ? 'active' : '' }}">
             <span class="material-icons">dashboard</span>
             <span class="nav-text">Dashboard</span>
         </a>
-        <a href="#" class="nav-item" data-page="pengajuan">
+        <a href="{{ route('mahasiswa.pengajuan.index') }}" class="nav-item {{ request()->routeIs('mahasiswa.pengajuan.*') ? 'active' : '' }}">
             <span class="material-icons">description</span>
             <span class="nav-text">Pengajuan</span>
         </a>
-        <a href="#" class="nav-item" data-page="lpj">
+        <a href="{{ route('mahasiswa.lpj.index') }}" class="nav-item {{ request()->routeIs('mahasiswa.lpj.*') ? 'active' : '' }}">
             <span class="material-icons">assignment</span>
             <span class="nav-text">LPJ</span>
         </a>
-        <a href="#" class="nav-item active" data-page="riwayat">
-            <span class="material-icons">history</span>
-            <span class="nav-text">Riwayat</span>
-        </a>
-        <a href="#" class="nav-item" data-page="notifikasi">
-            <span class="material-icons">notifications</span>
-            <span class="nav-text">Notifikasi</span>
-        </a>
-        <a href="#" class="nav-item" data-page="pengaturan">
-            <span class="material-icons">settings</span>
-            <span class="nav-text">Pengaturan</span>
-        </a>
-        <a href="#" class="nav-item" data-page="keluar">
+        <a href="{{ route('logout') }}" class="nav-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <span class="material-icons">logout</span>
             <span class="nav-text">Keluar</span>
         </a>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">@csrf</form>
     </div>
 
     <!-- Main Content -->
@@ -619,7 +597,8 @@
                     <span class="material-icons">person</span>
                 </div>
                 <div class="user-details">
-                    <h2>Riwayat Pengajuan</h2>
+                    {{-- PERUBAHAN 2: Menampilkan nama user yang login --}}
+                    <h2>{{ Auth::user()->name }}</h2>
                     <p>Lihat dan kelola semua pengajuan yang telah dibuat</p>
                 </div>
             </div>
@@ -629,55 +608,53 @@
             <h1 class="page-title">Riwayat Pengajuan</h1>
             <p class="page-subtitle">Daftar lengkap semua pengajuan kegiatan dan reimbursement yang telah Anda buat</p>
         </div>
-
-        <!-- Filter Section -->
-        <div class="filter-section card">
-            <div class="filter-group">
-                <label class="filter-label">Status</label>
-                <select class="filter-select" id="statusFilter">
-                    <option value="all">Semua Status</option>
-                    <option value="pending">Menunggu Validasi</option>
-                    <option value="approved">Disetujui</option>
-                    <option value="revision">Perlu Revisi</option>
-                    <option value="rejected">Ditolak</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label class="filter-label">Bulan</label>
-                <select class="filter-select" id="monthFilter">
-                    <option value="all">Semua Bulan</option>
-                    <option value="1">Januari</option>
-                    <option value="2">Februari</option>
-                    <option value="3">Maret</option>
-                    <option value="4">April</option>
-                    <option value="5">Mei</option>
-                    <option value="6">Juni</option>
-                    <option value="7">Juli</option>
-                    <option value="8">Agustus</option>
-                    <option value="9">September</option>
-                    <option value="10">Oktober</option>
-                    <option value="11">November</option>
-                    <option value="12">Desember</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label class="filter-label">Tahun</label>
-                <select class="filter-select" id="yearFilter">
-                    <option value="2025">2025</option>
-                    <option value="2024">2024</option>
-                    <option value="2023">2023</option>
-                </select>
-            </div>
-            
-            <div class="filter-group" style="align-self: flex-end;">
-                <button class="filter-select" style="background: var(--accent); color: white; cursor: pointer;">
-                    Terapkan Filter
-                </button>
-            </div>
+    <!-- Filter Section -->
+    <div class="filter-section card">
+        <div class="filter-group">
+            <label class="filter-label">Status</label>
+            <select class="filter-select" id="statusFilter">
+                <option value="all">Semua Status</option>
+                <option value="pending">Menunggu Validasi</option>
+                <option value="approved">Disetujui</option>
+                <option value="revision">Perlu Revisi</option>
+                <option value="rejected">Ditolak</option>
+            </select>
         </div>
-
+        
+        <div class="filter-group">
+            <label class="filter-label">Bulan</label>
+            <select class="filter-select" id="monthFilter">
+                <option value="all">Semua Bulan</option>
+                <option value="1">Januari</option>
+                <option value="2">Februari</option>
+                <option value="3">Maret</option>
+                <option value="4">April</option>
+                <option value="5">Mei</option>
+                <option value="6">Juni</option>
+                <option value="7">Juli</option>
+                <option value="8">Agustus</option>
+                <option value="9">September</option>
+                <option value="10">Oktober</option>
+                <option value="11">November</option>
+                <option value="12">Desember</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label class="filter-label">Tahun</label>
+            <select class="filter-select" id="yearFilter">
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+            </select>
+        </div>
+        
+        <div class="filter-group" style="align-self: flex-end;">
+            <button class="filter-select" style="background: var(--accent); color: white; cursor: pointer;">
+                Terapkan Filter
+            </button>
+        </div>
+    </div>
         <!-- Table Section -->
         <div class="table-container card">
             <table class="data-table">
@@ -691,251 +668,187 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>
-                            <div class="font-semibold">Seminar Nasional Teknologi</div>
-                            <div class="text-sm text-gray-400">HIMA Teknik Informatika</div>
-                        </td>
-                        <td>15 September 2025</td>
-                        <td>Rp 5.000.000</td>
-                        <td>
-                            <span class="status-badge status-pending">
-                                <span class="material-icons" style="font-size: 14px; margin-right: 5px;">schedule</span>
-                                Menunggu Validasi
-                            </span>
-                        </td>
-                        <td>
-                            <a href="#" class="action-btn action-detail" data-action="detail-pengajuan">
-                                <span class="material-icons">visibility</span>
-                                Detail
-                            </a>
-                            <a href="#" class="action-btn action-download" data-action="download-pengajuan">
-                                <span class="material-icons">download</span>
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="font-semibold">Pelatihan Leadership</div>
-                            <div class="text-sm text-gray-400">BEM Fakultas</div>
-                        </td>
-                        <td>10 Agustus 2025</td>
-                        <td>Rp 3.000.000</td>
-                        <td>
-                            <span class="status-badge status-approved">
-                                <span class="material-icons" style="font-size: 14px; margin-right: 5px;">check_circle</span>
-                                Disetujui
-                            </span>
-                        </td>
-                        <td>
-                            <a href="#" class="action-btn action-detail" data-action="detail-pengajuan">
-                                <span class="material-icons">visibility</span>
-                                Detail
-                            </a>
-                            <a href="#" class="action-btn action-download" data-action="download-pengajuan">
-                                <span class="material-icons">download</span>
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="font-semibold">Lomba Robotik Nasional</div>
-                            <div class="text-sm text-gray-400">UKM Robotika</div>
-                        </td>
-                        <td>5 Juli 2025</td>
-                        <td>Rp 7.500.000</td>
-                        <td>
-                            <span class="status-badge status-revision">
-                                <span class="material-icons" style="font-size: 14px; margin-right: 5px;">warning</span>
-                                Perlu Revisi
-                            </span>
-                        </td>
-                        <td>
-                            <a href="#" class="action-btn action-detail" data-action="detail-pengajuan">
-                                <span class="material-icons">visibility</span>
-                                Detail
-                            </a>
-                            <a href="#" class="action-btn action-download" data-action="download-pengajuan">
-                                <span class="material-icons">download</span>
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="font-semibold">Kunjungan Industri</div>
-                            <div class="text-sm text-gray-400">HIMA Sistem Informasi</div>
-                        </td>
-                        <td>20 Juni 2025</td>
-                        <td>Rp 4.200.000</td>
-                        <td>
-                            <span class="status-badge status-rejected">
-                                <span class="material-icons" style="font-size: 14px; margin-right: 5px;">cancel</span>
-                                Ditolak
-                            </span>
-                        </td>
-                        <td>
-                            <a href="#" class="action-btn action-detail" data-action="detail-pengajuan">
-                                <span class="material-icons">visibility</span>
-                                Detail
-                            </a>
-                            <a href="#" class="action-btn action-download" data-action="download-pengajuan">
-                                <span class="material-icons">download</span>
-                            </a>
-                        </td>
-                    </tr>
+                    {{-- PERUBAHAN 3: Mengganti data statis dengan loop data dari controller --}}
+                    @forelse ($pengajuans as $pengajuan)
+                        <tr>
+                            <td>
+                                <div class="font-semibold">{{ $pengajuan->judul_kegiatan }}</div>
+                                <div class="text-sm text-gray-400">{{ $pengajuan->ormawa->nama_ormawa ?? 'Pengajuan Individu' }}</div>
+                            </td>
+                            <td>{{ \Carbon\Carbon::parse($pengajuan->tanggal_pengajuan)->format('d F Y') }}</td>
+                            <td>Rp {{ number_format($pengajuan->total_rab, 0, ',', '.') }}</td>
+                            <td>
+                                @php
+                                    $statusClass = 'status-pending'; // Default
+                                    if (in_array($pengajuan->status->nama_status, ['Disetujui', 'Dana Cair', 'Selesai'])) $statusClass = 'status-approved';
+                                    if (in_array($pengajuan->status->nama_status, ['Ditolak'])) $statusClass = 'status-rejected';
+                                    if (in_array($pengajuan->status->nama_status, ['Revisi'])) $statusClass = 'status-revision';
+                                @endphp
+                                <span class="status-badge {{ $statusClass }}">
+                                    {{ $pengajuan->status->nama_status }}
+                                </span>
+                            </td>
+                            <td>
+                                {{-- PERUBAHAN 4: Link detail yang dinamis --}}
+                                <a href="{{ route('mahasiswa.pengajuan.show', $pengajuan->pengajuan_id) }}" class="action-btn action-detail">
+                                    <span class="material-icons">visibility</span>
+                                    Detail
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center py-10">
+                                <div class="empty-state">
+                                    <span class="material-icons">inbox</span>
+                                    <p>Anda belum pernah membuat pengajuan.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
 
         <!-- Pagination -->
         <div class="pagination">
-            <a href="#" class="pagination-btn" data-action="pagination-prev">
-                <span class="material-icons">chevron_left</span>
-            </a>
-            <a href="#" class="pagination-btn active" data-action="pagination-1">1</a>
-            <a href="#" class="pagination-btn" data-action="pagination-2">2</a>
-            <a href="#" class="pagination-btn" data-action="pagination-3">3</a>
-            <a href="#" class="pagination-btn" data-action="pagination-next">
-                <span class="material-icons">chevron_right</span>
-            </a>
+            {{-- PERUBAHAN 5: Paginasi dinamis dari Laravel --}}
+            {{ $pengajuans->links() }}
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.getElementById('menuToggle');
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const modal = document.getElementById('navigationModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalMessage = document.getElementById('modalMessage');
-            const modalCancel = document.getElementById('modalCancel');
-            const modalConfirm = document.getElementById('modalConfirm');
-            
-            let currentAction = null;
-            
-            // Toggle sidebar untuk mobile
-            if (menuToggle) {
-                menuToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('active');
-                    mainContent.classList.toggle('sidebar-active');
-                    this.classList.toggle('click-feedback');
-                });
-            }
-            
-            // Fungsi untuk menampilkan modal
-            function showModal(title, message, action) {
-                modalTitle.textContent = title;
-                modalMessage.textContent = message;
-                currentAction = action;
-                modal.style.display = 'flex';
-            }
-            
-            // Fungsi untuk menyembunyikan modal
-            function hideModal() {
-                modal.style.display = 'none';
-                currentAction = null;
-            }
-            
-            // Event listener untuk tombol modal
-            modalCancel.addEventListener('click', hideModal);
-            modalConfirm.addEventListener('click', function() {
-                if (currentAction) {
-                    // Simulasi navigasi (dalam implementasi nyata, ini akan mengarahkan ke halaman yang sesuai)
-                    alert(`Akan mengarahkan ke: ${currentAction}`);
-                    hideModal();
-                    
-                    // Jika navigasi ke halaman lain, update menu aktif
-                    if (currentAction.startsWith('navigate-')) {
-                        const targetPage = currentAction.replace('navigate-', '');
-                        updateActiveNavItem(targetPage);
-                    }
-                }
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const modal = document.getElementById('navigationModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalCancel = document.getElementById('modalCancel');
+        const modalConfirm = document.getElementById('modalConfirm');
+        
+        let currentAction = null;
+        
+        // Toggle sidebar untuk mobile
+        if (menuToggle) {
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                mainContent.classList.toggle('sidebar-active');
+                this.classList.toggle('click-feedback');
             });
-            
-            // Fungsi untuk mengupdate menu aktif
-            function updateActiveNavItem(page) {
-                const navItems = document.querySelectorAll('.nav-item');
-                navItems.forEach(item => {
-                    item.classList.remove('active');
-                    if (item.getAttribute('data-page') === page) {
-                        item.classList.add('active');
-                    }
-                });
+        }
+        
+        // Fungsi untuk menampilkan modal
+        function showModal(title, message, action) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            currentAction = action;
+            modal.style.display = 'flex';
+        }
+        
+        // Fungsi untuk menyembunyikan modal
+        function hideModal() {
+            modal.style.display = 'none';
+            currentAction = null;
+        }
+        
+        // Event listener untuk tombol modal
+        modalCancel.addEventListener('click', hideModal);
+        modalConfirm.addEventListener('click', function() {
+            if (currentAction) {
+                // Simulasi navigasi (dalam implementasi nyata, ini akan mengarahkan ke halaman yang sesuai)
+                alert(`Akan mengarahkan ke: ${currentAction}`);
+                hideModal();
+                
+                // Jika navigasi ke halaman lain, update menu aktif
+                if (currentAction.startsWith('navigate-')) {
+                    const targetPage = currentAction.replace('navigate-', '');
+                    updateActiveNavItem(targetPage);
+                }
             }
-            
-            // Event listener untuk item navigasi sidebar
+        });
+        
+        // Fungsi untuk mengupdate menu aktif
+        function updateActiveNavItem(page) {
             const navItems = document.querySelectorAll('.nav-item');
             navItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const page = this.getAttribute('data-page');
-                    
-                    // Efek feedback klik
-                    this.classList.add('click-feedback');
-                    setTimeout(() => {
-                        this.classList.remove('click-feedback');
-                    }, 300);
-                    
-                    // Tampilkan modal konfirmasi
-                    if (page === 'keluar') {
-                        showModal('Konfirmasi Keluar', 'Apakah Anda yakin ingin keluar dari sistem?', 'logout');
-                    } else {
-                        showModal(`Navigasi ke ${page.charAt(0).toUpperCase() + page.slice(1)}`, 
-                                 `Anda akan diarahkan ke halaman ${page}.`, `navigate-${page}`);
-                    }
-                });
+                item.classList.remove('active');
+                if (item.getAttribute('data-page') === page) {
+                    item.classList.add('active');
+                }
             });
-            
-            // Event listener untuk tombol aksi di tabel
-            const actionButtons = document.querySelectorAll('.action-btn, .pagination-btn');
-            actionButtons.forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const action = this.getAttribute('data-action');
-                    
-                    this.classList.add('click-feedback');
-                    setTimeout(() => {
-                        this.classList.remove('click-feedback');
-                    }, 300);
-                    
-                    if (action === 'detail-pengajuan') {
-                        showModal('Detail Pengajuan', 'Menampilkan detail pengajuan yang dipilih.', action);
-                    } else if (action === 'download-pengajuan') {
-                        showModal('Download Berkas', 'Mengunduh berkas pengajuan.', action);
-                    } else if (action.startsWith('pagination-')) {
-                        showModal('Pindah Halaman', `Menampilkan halaman ${action.replace('pagination-', '')}.`, action);
-                    }
-                });
-            });
-            
-            // Filter functionality
-            const statusFilter = document.getElementById('statusFilter');
-            const monthFilter = document.getElementById('monthFilter');
-            const yearFilter = document.getElementById('yearFilter');
-            
-            // Simulasi filter (dalam implementasi nyata akan ada request ke server)
-            function applyFilters() {
-                // Di sini akan ada logika untuk memfilter data
-                console.log('Filter diterapkan:', {
-                    status: statusFilter.value,
-                    month: monthFilter.value,
-                    year: yearFilter.value
-                });
-            }
-            
-            // Event listeners untuk filter
-            statusFilter.addEventListener('change', applyFilters);
-            monthFilter.addEventListener('change', applyFilters);
-            yearFilter.addEventListener('change', applyFilters);
-            
-            // Tutup modal saat klik di luar konten modal
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    hideModal();
+        }
+        
+        // Event listener untuk item navigasi sidebar
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = this.getAttribute('data-page');
+                
+                // Efek feedback klik
+                this.classList.add('click-feedback');
+                setTimeout(() => {
+                    this.classList.remove('click-feedback');
+                }, 300);
+                
+                // Tampilkan modal konfirmasi
+                if (page === 'keluar') {
+                    showModal('Konfirmasi Keluar', 'Apakah Anda yakin ingin keluar dari sistem?', 'logout');
+                } else {
+                    showModal(`Navigasi ke ${page.charAt(0).toUpperCase() + page.slice(1)}`, 
+                             `Anda akan diarahkan ke halaman ${page}.`, `navigate-${page}`);
                 }
             });
         });
-    </script>
-</body>
-</html>
+        
+        // Event listener untuk tombol aksi di tabel
+        const actionButtons = document.querySelectorAll('.action-btn, .pagination-btn');
+        actionButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const action = this.getAttribute('data-action');
+                
+                this.classList.add('click-feedback');
+                setTimeout(() => {
+                    this.classList.remove('click-feedback');
+                }, 300);
+                
+                if (action === 'detail-pengajuan') {
+                    showModal('Detail Pengajuan', 'Menampilkan detail pengajuan yang dipilih.', action);
+                } else if (action === 'download-pengajuan') {
+                    showModal('Download Berkas', 'Mengunduh berkas pengajuan.', action);
+                } else if (action.startsWith('pagination-')) {
+                    showModal('Pindah Halaman', `Menampilkan halaman ${action.replace('pagination-', '')}.`, action);
+                }
+            });
+        });
+        
+        // Filter functionality
+        const statusFilter = document.getElementById('statusFilter');
+        const monthFilter = document.getElementById('monthFilter');
+        const yearFilter = document.getElementById('yearFilter');
+        
+        // Simulasi filter (dalam implementasi nyata akan ada request ke server)
+        function applyFilters() {
+            // Di sini akan ada logika untuk memfilter data
+            console.log('Filter diterapkan:', {
+                status: statusFilter.value,
+                month: monthFilter.value,
+                year: yearFilter.value
+            });
+        }
+        
+        // Event listeners untuk filter
+        statusFilter.addEventListener('change', applyFilters);
+        monthFilter.addEventListener('change', applyFilters);
+        yearFilter.addEventListener('change', applyFilters);
+        
+        // Tutup modal saat klik di luar konten modal
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                hideModal();
+            }
+        });
+    });
+</script>

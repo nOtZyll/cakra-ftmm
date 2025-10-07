@@ -572,7 +572,7 @@
         <div class="logo">
             <h1>CAKRA</h1>
         </div>
-        <!-- Gunakan route Laravel yang sudah ada -->
+        
         <a href="{{ route('mahasiswa.dashboard') }}" class="nav-item {{ request()->routeIs('mahasiswa.dashboard') ? 'active' : '' }}">
             <span class="material-icons">dashboard</span>
             <span class="nav-text">Dashboard</span>
@@ -581,24 +581,13 @@
             <span class="material-icons">description</span>
             <span class="nav-text">Pengajuan</span>
         </a>
-        <!-- Note: Route LPJ index belum ada di routes, jadi sementara arahkan ke create -->
-        <a href="{{ route('mahasiswa.lpj.create') }}" class="nav-item {{ request()->routeIs('mahasiswa.lpj.*') ? 'active' : '' }}">
+        
+        {{-- PERBAIKAN: Link LPJ mengarah ke halaman index --}}
+        <a href="{{ route('mahasiswa.lpj.index') }}" class="nav-item {{ request()->routeIs('mahasiswa.lpj.*') ? 'active' : '' }}">
             <span class="material-icons">assignment</span>
             <span class="nav-text">LPJ</span>
         </a>
-        <!-- Note: Route riwayat, notifikasi, pengaturan belum ada di routes -->
-        <a href="#" class="nav-item" onclick="alert('Halaman Riwayat belum tersedia')">
-            <span class="material-icons">history</span>
-            <span class="nav-text">Riwayat</span>
-        </a>
-        <a href="#" class="nav-item" onclick="alert('Halaman Notifikasi belum tersedia')">
-            <span class="material-icons">notifications</span>
-            <span class="nav-text">Notifikasi</span>
-        </a>
-        <a href="#" class="nav-item" onclick="alert('Halaman Pengaturan belum tersedia')">
-            <span class="material-icons">settings</span>
-            <span class="nav-text">Pengaturan</span>
-        </a>
+        
         <a href="{{ route('logout') }}" class="nav-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <span class="material-icons">logout</span>
             <span class="nav-text">Keluar</span>
@@ -618,7 +607,8 @@
                     <span class="material-icons">person</span>
                 </div>
                 <div class="user-details">
-                    <h2>Selamat datang, {{ $user['name'] ?? 'Mahasiswa' }}</h2>
+                    {{-- PERUBAHAN 1: Menampilkan nama user dari controller --}}
+                    <h2>Selamat datang, {{ $user->name }}</h2>
                     <p>Status: Mahasiswa Aktif</p>
                 </div>
             </div>
@@ -626,14 +616,12 @@
 
         <!-- Tombol Shortcut -->
         <div class="shortcut-grid">
-            <!-- Gunakan route create pengajuan yang sudah ada -->
             <a href="{{ route('mahasiswa.pengajuan.create') }}" class="shortcut-btn primary card">
                 <span class="material-icons">add_circle</span>
                 <h3>Buat Pengajuan Baru</h3>
                 <p>Ajukan proposal kegiatan atau reimbursement</p>
             </a>
-            <!-- Gunakan route create LPJ yang sudah ada -->
-            <a href="{{ route('mahasiswa.lpj.create') }}" class="shortcut-btn accent card">
+            <a href="{{ route('mahasiswa.lpj.index') }}" class="shortcut-btn accent card">
                 <span class="material-icons">assignment</span>
                 <h3>Kumpulkan LPJ</h3>
                 <p>Laporkan pertanggungjawaban kegiatan</p>
@@ -643,48 +631,25 @@
         <!-- Pengajuan Sedang Berjalan -->
         <div class="section-header">
             <h3>Pengajuan Sedang Berjalan</h3>
-            <!-- Gunakan route index pengajuan yang sudah ada -->
             <a href="{{ route('mahasiswa.pengajuan.index') }}" class="view-all">
                 Lihat Semua <span class="material-icons">chevron_right</span>
             </a>
         </div>
 
         <div class="pengajuan-list">
-            @php
-                // Data dummy pengajuan - nanti bisa diganti dengan data dari controller
-                $pengajuanSedang = [
-                    (object)[
-                        'id' => 1,
-                        'judul' => 'Proposal Dies Natalis FTMM',
-                        'ormawa' => 'ORMAWA HMTI',
-                        'created_at' => now()->subDays(2),
-                        'status' => 'Menunggu Tanda Tangan SPTJM',
-                        'total_rab' => 15000000,
-                    ],
-                    (object)[
-                        'id' => 2,
-                        'judul' => 'Reimbursement Lomba Robotik Nasional',
-                        'ormawa' => 'ORMAWA Robotika',
-                        'created_at' => now()->subDays(5),
-                        'status' => 'Diproses Staf Keuangan',
-                        'total_rab' => 2500000,
-                    ],
-                ];
-            @endphp
-
-            @forelse($pengajuanSedang as $p)
-                <!-- Gunakan route show pengajuan yang sudah ada -->
-                <a href="{{ route('mahasiswa.pengajuan.show') }}?id={{ $p->id }}" class="pengajuan-item card">
+            {{-- PERUBAHAN 2: Menghapus data dummy dan menggunakan data dari controller --}}
+            @forelse($pengajuanBerjalan as $p)
+                <a href="{{ route('mahasiswa.pengajuan.show', $p->pengajuan_id) }}" class="pengajuan-item card">
                     <div class="pengajuan-info">
-                        <h4>{{ $p->judul }}</h4>
+                        <h4>{{ $p->judul_kegiatan }}</h4>
                         <div class="pengajuan-meta">
-                            <span>{{ $p->ormawa }}</span>
-                            <span>{{ $p->created_at->diffForHumans() }}</span>
+                            <span>{{ $p->ormawa->nama_ormawa ?? 'Individu' }}</span>
+                            <span>{{ $p->tanggal_pengajuan ? \Carbon\Carbon::parse($p->tanggal_pengajuan)->diffForHumans() : '' }}</span>
                         </div>
                     </div>
                     <div class="pengajuan-status">
-                        <span class="status-badge {{ $p->status == 'Menunggu Tanda Tangan SPTJM' ? 'status-waiting' : 'status-processing' }}">
-                            {{ $p->status }}
+                        <span class="status-badge status-processing">
+                            {{ $p->status->nama_status }}
                         </span>
                         <span class="pengajuan-amount">Rp {{ number_format($p->total_rab, 0, ',', '.') }}</span>
                     </div>
@@ -700,95 +665,55 @@
         <!-- Notifikasi Revisi -->
         <div class="section-header">
             <h3>Notifikasi Revisi</h3>
-            <a href="#" class="view-all" onclick="alert('Halaman Notifikasi belum tersedia')">
+            <a href="{{ route('mahasiswa.pengajuan.index') }}" class="view-all">
                 Lihat Semua <span class="material-icons">chevron_right</span>
             </a>
         </div>
 
-        @php
-            // Data dummy revisi
-            $revisi = [
-                (object)[ 'komentar' => 'Lengkapi dokumen SPTJM.' ],
-                (object)[ 'komentar' => 'Perbaiki RAB bagian transportasi.' ],
-            ];
-        @endphp
-
-        @if(count($revisi) > 0)
-            @foreach($revisi as $r)
-                <div class="revisi-item warning card">
-                    <span class="material-icons revisi-icon">warning</span>
-                    <p>{{ $r->komentar }}</p>
-                </div>
-            @endforeach
-        @else
+        {{-- PERUBAHAN 3: Mengganti data dummy dengan data dari controller --}}
+        @forelse($notifikasiRevisi as $r)
+            <a href="{{ route('mahasiswa.pengajuan.show', $r->pengajuan_id) }}" class="revisi-item warning card">
+                <span class="material-icons revisi-icon">warning</span>
+                <p>Pengajuan '{{ $r->judul_kegiatan }}' memerlukan revisi.</p>
+            </a>
+        @empty
             <div class="empty-state card">
                 <span class="material-icons">check_circle</span>
                 <p>Tidak ada revisi</p>
             </div>
-        @endif
+        @endforelse
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.card');
-            const menuToggle = document.getElementById('menuToggle');
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            
-            // Efek hover untuk semua kartu
-            cards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.transition = 'all 0.3s ease';
-                });
-                
-                card.addEventListener('mouseleave', function() {
-                    this.style.transition = 'all 0.3s ease';
-                });
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.card');
+        
+        // Efek hover untuk semua kartu
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transition = 'all 0.3s ease';
             });
             
-            // Toggle sidebar untuk mobile
-            if (menuToggle) {
-                menuToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('active');
-                    mainContent.classList.toggle('sidebar-active');
-                    this.classList.toggle('click-feedback');
-                });
-            }
-            
-            // Animasi scroll-triggered
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
-            
-            const observer = new IntersectionObserver(function(entries) {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.animationPlayState = 'running';
-                    }
-                });
-            }, observerOptions);
-            
-            // Amati elemen dengan animasi
-            const animatedElements = document.querySelectorAll('.card, .section-header, .pengajuan-item, .revisi-item');
-            animatedElements.forEach(el => {
-                observer.observe(el);
-            });
-            
-            // Feedback klik untuk semua link
-            const allLinks = document.querySelectorAll('a');
-            allLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    // Skip untuk link logout
-                    if (this.getAttribute('href') === '{{ route("logout") }}') return;
-                    
-                    this.classList.add('click-feedback');
-                    setTimeout(() => {
-                        this.classList.remove('click-feedback');
-                    }, 300);
-                });
+            card.addEventListener('mouseleave', function() {
+                this.style.transition = 'all 0.3s ease';
             });
         });
-    </script>
-</body>
-</html>
+
+        // Animasi scroll-triggered
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        const animatedElements = document.querySelectorAll('.card, .section-header, .pengajuan-item, .revisi-item');
+        animatedElements.forEach(el => {
+            observer.observe(el);
+        });
+    });
+</script>
+
