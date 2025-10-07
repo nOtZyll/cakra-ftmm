@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Auth\LoginController; // <-- Impor Controller login
 
 /*
 |--------------------------------------------------------------------------
@@ -10,6 +11,14 @@ use Illuminate\Http\Request;
 */
 Route::get('/', fn () => view('landing'))->name('landing');
 
+/*
+|--------------------------------------------------------------------------
+| Auth Routes (NYATA)
+|--------------------------------------------------------------------------
+*/
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 /*
 |--------------------------------------------------------------------------
 | Auth Routes (Login & Register Dummy)
