@@ -35,6 +35,7 @@ Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->na
 Route::post('/register', [RegisterController::class, 'register']);
 
 
+
 /*
 |--------------------------------------------------------------------------
 | Mahasiswa Routes (NYATA)
