@@ -578,109 +578,87 @@
     </style>
 </head>
 <body>
-    <!-- Menu Toggle untuk Mobile -->
     <button class="menu-toggle material-icons" id="menuToggle">menu</button>
 
-    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
-        <div class="logo">
-            <h1>CAKRA</h1>
-        </div>
-        <a href="#" class="nav-item" data-page="dashboard">
+        <div class="logo"><h1>CAKRA</h1></div>
+        <a href="{{ route('mahasiswa.dashboard') }}" class="nav-item">
             <span class="material-icons">dashboard</span>
             <span class="nav-text">Dashboard</span>
         </a>
-        <a href="#" class="nav-item" data-page="pengajuan">
+        <a href="{{ route('mahasiswa.pengajuan.index') }}" class="nav-item">
             <span class="material-icons">description</span>
             <span class="nav-text">Pengajuan</span>
         </a>
-        <a href="#" class="nav-item active" data-page="lpj">
+        <a href="{{ route('mahasiswa.lpj.index') }}" class="nav-item active">
             <span class="material-icons">assignment</span>
             <span class="nav-text">LPJ</span>
         </a>
-        <a href="#" class="nav-item" data-page="riwayat">
-            <span class="material-icons">history</span>
-            <span class="nav-text">Riwayat</span>
-        </a>
-        <a href="#" class="nav-item" data-page="notifikasi">
-            <span class="material-icons">notifications</span>
-            <span class="nav-text">Notifikasi</span>
-        </a>
-        <a href="#" class="nav-item" data-page="pengaturan">
-            <span class="material-icons">settings</span>
-            <span class="nav-text">Pengaturan</span>
-        </a>
-        <a href="#" class="nav-item" data-page="keluar">
+        <a href="{{ route('logout') }}" class="nav-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <span class="material-icons">logout</span>
             <span class="nav-text">Keluar</span>
         </a>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">@csrf</form>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content" id="mainContent">
         <div class="header">
             <div>
                 <h1 class="page-title">Pengumpulan LPJ</h1>
-                
-                <!-- Breadcrumb - DIPERBAIKI: jadi link -->
+                {{-- Breadcrumb dibuat dinamis --}}
                 <div class="breadcrumb">
-                    <div class="breadcrumb-item">
-                        <a href="#" class="breadcrumb-link" data-page="dashboard">
-                            <span class="material-icons">home</span>
-                            <span>Dashboard</span>
-                        </a>
-                    </div>
-                    <div class="breadcrumb-item">
-                        <a href="#" class="breadcrumb-link" data-page="pengajuan">
-                            <span>Pengajuan</span>
-                        </a>
-                    </div>
-                    <div class="breadcrumb-item active">
-                        <span>LPJ</span>
-                    </div>
+                    <a href="{{ route('mahasiswa.dashboard') }}" class="breadcrumb-item">Dashboard</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <a href="{{ route('mahasiswa.lpj.index') }}" class="breadcrumb-item">LPJ</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span class="breadcrumb-item active">Buat LPJ</span>
                 </div>
             </div>
-            
             <div class="user-info">
-                <div class="avatar">
-                    <span class="material-icons">person</span>
-                </div>
+                <div class="avatar"><span class="material-icons">person</span></div>
                 <div class="user-details">
-                    <h2>Selamat datang, [Nama Mahasiswa]</h2>
-                    <p>Status: Mahasiswa Aktif</p>
+                    <h2>{{ Auth::user()->name }}</h2>
+                    <p>Mahasiswa Aktif</p>
                 </div>
             </div>
         </div>
 
-        <!-- Ringkasan Pengajuan -->
         <div class="glass-card summary-card">
             <h3 class="summary-title">Ringkasan Pengajuan</h3>
             <div class="summary-detail">
                 <div class="detail-item">
                     <span class="material-icons">title</span>
-                    <span>Judul: <strong>Seminar Nasional</strong></span>
+                    <span>Judul: <strong>{{ $pengajuan->judul_kegiatan }}</strong></span>
                 </div>
                 <div class="detail-item">
                     <span class="material-icons">groups</span>
-                    <span>ORMAWA: <strong>BEM Fakultas Teknik</strong></span>
+                    <span>ORMAWA: <strong>{{ $pengajuan->ormawa->nama_ormawa ?? 'Individu' }}</strong></span>
                 </div>
                 <div class="detail-item">
                     <span class="material-icons">payments</span>
-                    <span>Total RAB Disetujui: <strong class="amount">Rp 5.000.000</strong></span>
+                    <span>Total RAB Disetujui: <strong class="amount">Rp {{ number_format($pengajuan->total_rab, 0, ',', '.') }}</strong></span>
                 </div>
             </div>
         </div>
 
-        <!-- Form Input Realisasi -->
-        <form action="#" method="POST" enctype="multipart/form-data">
-            <!-- CSRF token placeholder -->
+        <form action="{{ route('mahasiswa.lpj.store', $pengajuan->pengajuan_id) }}" method="POST" enctype="multipart/form-data">
+            @csrf
             <div class="glass-card form-section">
-                <h3 class="section-title">
-                    <span class="material-icons">list_alt</span>
-                    Form Realisasi Pengeluaran
-                </h3>
+                <h3 class="section-title">Form Realisasi Pengeluaran</h3>
 
-                <div x-data="lpjForm()" class="space-y-4">
+                {{-- Menampilkan pesan error --}}
+                @if ($errors->any())
+                    <div class="warning-text mb-4">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+                
+                {{-- Alpine.js untuk tabel dinamis, total RAB diambil dari controller --}}
+                <div x-data="lpjForm({ totalRab: {{ $pengajuan->total_rab }} })" class="space-y-4">
                     <div class="table-container">
                         <table class="data-table">
                             <thead>
@@ -697,178 +675,56 @@
                             <tbody>
                                 <template x-for="(row, index) in rows" :key="index">
                                     <tr>
-                                        <td>
-                                            <input type="text" x-model="row.nama_item" 
-                                                   class="form-input" placeholder="Nama item">
-                                        </td>
-                                        <td>
-                                            <input type="number" x-model.number="row.jumlah" 
-                                                   @input="calculateTotal(index)" 
-                                                   class="form-input" placeholder="0" min="0">
-                                        </td>
-                                        <td>
-                                            <input type="text" x-model="row.satuan" 
-                                                   class="form-input" placeholder="Satuan">
-                                        </td>
-                                        <td>
-                                            <input type="number" x-model.number="row.harga_satuan" 
-                                                   @input="calculateTotal(index)" 
-                                                   class="form-input" placeholder="0" min="0">
-                                        </td>
-                                        <td class="amount">
-                                            Rp <span x-text="row.total.toLocaleString('id-ID')"></span>
-                                        </td>
+                                        {{-- Atribut 'name' disesuaikan untuk backend --}}
+                                        <td><input type="text" x-model="row.nama_item" :name="`items[${index}][nama_item]`" class="form-input" required></td>
+                                        <td><input type="number" x-model.number="row.jumlah" @input="calculateTotal(index)" :name="`items[${index}][jumlah]`" class="form-input" min="1" required></td>
+                                        <td><input type="text" x-model="row.satuan" :name="`items[${index}][satuan]`" class="form-input" required></td>
+                                        <td><input type="number" x-model.number="row.harga_satuan" @input="calculateTotal(index)" :name="`items[${index}][harga_satuan]`" class="form-input" min="0" required></td>
+                                        <td class="amount">Rp <span x-text="row.total.toLocaleString('id-ID')"></span></td>
                                         <td>
                                             <div class="file-input-container">
-                                                <input type="file" class="file-input" 
-                                                       :name="'nota_' + index" accept="image/*">
-                                                <label class="file-input-label">
-                                                    <span class="material-icons" style="font-size: 18px;">cloud_upload</span>
-                                                    Unggah
-                                                </label>
+                                                <input type="file" class="file-input" :name="`items[${index}][nota]`" accept="image/*" required>
+                                                <label class="file-input-label">Unggah</label>
                                             </div>
                                         </td>
-                                        <td>
-                                            <button type="button" @click="removeRow(index)" 
-                                                    class="btn btn-error btn-sm">
-                                                <span class="material-icons" style="font-size: 16px;">delete</span>
-                                                Hapus
-                                            </button>
-                                        </td>
+                                        <td><button type="button" @click="removeRow(index)" class="btn btn-error btn-sm">Hapus</button></td>
                                     </tr>
                                 </template>
                             </tbody>
                         </table>
                     </div>
 
-                    <button type="button" @click="addRow()" class="btn btn-primary">
-                        <span class="material-icons">add</span>
-                        Tambah Item
-                    </button>
+                    <button type="button" @click="addRow()" class="btn btn-primary">Tambah Item</button>
 
-                    <!-- Total Realisasi -->
                     <div class="glass-card total-card">
-                        <p class="section-title">
-                            <span class="material-icons">calculate</span>
-                            Total Realisasi
-                        </p>
-                        <p class="total-amount">
-                            Rp <span x-text="grandTotal.toLocaleString('id-ID')"></span>
-                        </p>
-                        <p x-show="grandTotal > 5000000" class="warning-text">
-                            <span class="material-icons">warning</span>
-                            Total realisasi tidak boleh melebihi RAB yang disetujui!
-                        </p>
-                        <p x-show="grandTotal <= 5000000 && grandTotal > 0" class="detail-item" style="color: var(--success);">
-                            <span class="material-icons">check_circle</span>
-                            Total realisasi sesuai dengan RAB yang disetujui.
-                        </p>
+                        <p class="section-title">Total Realisasi</p>
+                        <p class="total-amount">Rp <span x-text="grandTotal.toLocaleString('id-ID')"></span></p>
+                        {{-- Validasi total realisasi dibuat dinamis --}}
+                        <p x-show="grandTotal > totalRab" class="warning-text">Total realisasi tidak boleh melebihi RAB!</p>
                     </div>
                 </div>
 
-                <!-- Tombol Submit -->
                 <div class="text-center mt-4">
-                    <button type="submit" class="btn btn-success" style="padding: 12px 30px;">
-                        <span class="material-icons">send</span>
-                        Kumpulkan LPJ
-                    </button>
+                    <button type="submit" class="btn btn-success">Kumpulkan LPJ</button>
                 </div>
             </div>
         </form>
     </div>
 
     <script>
-        function lpjForm() {
+        // Alpine.js function
+        function lpjForm(config) {
             return {
-                rows: [
-                    { nama_item: '', jumlah: 0, satuan: '', harga_satuan: 0, total: 0 }
-                ],
+                rows: [{ nama_item: '', jumlah: 1, satuan: 'Unit', harga_satuan: 0, total: 0 }],
                 grandTotal: 0,
-                addRow() {
-                    this.rows.push({ nama_item: '', jumlah: 0, satuan: '', harga_satuan: 0, total: 0 });
-                },
-                removeRow(index) {
-                    if (this.rows.length > 1) {
-                        this.rows.splice(index, 1);
-                        this.calculateGrandTotal();
-                    }
-                },
-                calculateTotal(index) {
-                    let row = this.rows[index];
-                    row.total = row.jumlah * row.harga_satuan;
-                    this.calculateGrandTotal();
-                },
-                calculateGrandTotal() {
-                    this.grandTotal = this.rows.reduce((sum, row) => sum + row.total, 0);
-                }
+                totalRab: config.totalRab, // Menerima total RAB dari backend
+                init() { this.calculateGrandTotal(); },
+                addRow() { this.rows.push({ nama_item: '', jumlah: 1, satuan: 'Unit', harga_satuan: 0, total: 0 }); },
+                removeRow(index) { if (this.rows.length > 1) { this.rows.splice(index, 1); this.calculateGrandTotal(); } },
+                calculateTotal(index) { let row = this.rows[index]; row.total = row.jumlah * row.harga_satuan; this.calculateGrandTotal(); },
+                calculateGrandTotal() { this.grandTotal = this.rows.reduce((sum, row) => sum + row.total, 0); }
             }
         }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.getElementById('menuToggle');
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const buttons = document.querySelectorAll('.btn');
-            const cards = document.querySelectorAll('.glass-card');
-            const navItems = document.querySelectorAll('.nav-item');
-            const breadcrumbLinks = document.querySelectorAll('.breadcrumb-link');
-            
-            // Toggle sidebar untuk mobile
-            if (menuToggle) {
-                menuToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('active');
-                    mainContent.classList.toggle('sidebar-active');
-                });
-            }
-            
-            // Efek klik pada tombol
-            buttons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    this.style.transform = 'scale(0.98)';
-                    setTimeout(() => {
-                        this.style.transform = '';
-                    }, 150);
-                });
-            });
-            
-            // Efek klik pada card
-            cards.forEach(card => {
-                card.addEventListener('click', function() {
-                    this.style.transform = 'translateY(-2px) scale(0.995)';
-                    setTimeout(() => {
-                        this.style.transform = '';
-                    }, 150);
-                });
-            });
-            
-            // Navigasi sidebar
-            navItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    navItems.forEach(nav => nav.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Opsional: tampilkan alert untuk demo
-                    const page = this.getAttribute('data-page');
-                    console.log('Navigasi ke:', page);
-                });
-            });
-
-            // Navigasi breadcrumb
-            breadcrumbLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const page = this.getAttribute('data-page');
-                    console.log('Breadcrumb ke:', page);
-                    
-                    // Hapus active dari semua nav
-                    navItems.forEach(nav => nav.classList.remove('active'));
-                    // Cari dan aktifkan nav yang sesuai
-                    const targetNav = document.querySelector(`.nav-item[data-page="${page}"]`);
-                    if (targetNav) targetNav.classList.add('active');
-                });
-            });
-        });
     </script>
 </body>
 </html>

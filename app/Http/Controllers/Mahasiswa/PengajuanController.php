@@ -155,13 +155,107 @@ class PengajuanController extends Controller
      */
     public function show(Pengajuan $pengajuan)
     {
+        /**
+         * --- DEBUGGING WAJIB ---
+         * Baris ini HARUS dieksekusi. Jika tidak, ada masalah di file rute.
+         */
+
+        // Kode di bawah ini tidak akan berjalan karena ada dd() di atas
+        if ($pengajuan->ormawa_id !== Auth::user()->ormawa_id) {
+            abort(403, 'AKSES DITOLAK');
+        }
+
+        $pengajuan->load(['user', 'ormawa', 'status', 'itemsRab']);
+        return view('staf_ormawa.screening.show', compact('pengajuan'));
+    }
+        /**
+     * --- METHOD BARU: Menampilkan form untuk mengedit pengajuan ---
+     */
+    public function edit(Pengajuan $pengajuan)
+    {
+        // Proteksi: pastikan user hanya bisa mengedit pengajuannya sendiri
         if ($pengajuan->user_id !== Auth::id()) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+            abort(403);
+        }
+        // Proteksi: pastikan hanya bisa diedit jika statusnya 'Revisi'
+        if ($pengajuan->status->nama_status !== 'Revisi') {
+            return redirect()->route('mahasiswa.pengajuan.show', $pengajuan->pengajuan_id)->with('error', 'Pengajuan ini tidak dapat diedit.');
+        }
+
+        $ormawas = Ormawa::all();
+        $jenisSurats = JenisSurat::all();
+
+        return view('mahasiswa.pengajuan.edit', compact('pengajuan', 'ormawas', 'jenisSurats'));
+    }
+
+    /**
+     * --- METHOD BARU: Menyimpan perubahan dari form edit ---
+     */
+    public function update(Request $request, Pengajuan $pengajuan)
+    {
+        // Proteksi
+        if ($pengajuan->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Validasi (sama seperti store)
+        $request->validate([
+            'ormawa_id' => 'required|exists:ormawa,ormawa_id',
+            'jenis_surat_id' => 'required|exists:jenis_surat,jenis_surat_id',
+            'judul_kegiatan' => 'required|string|max:255',
+            'link_dokumen' => 'required|url',
+            'items' => 'required|array|min:1',
+            // ... (validasi item sama seperti store)
+        ]);
+ 
+        $totalRab = 0;
+        foreach ($request->items as $item) {
+            $totalRab += $item['jumlah'] * $item['harga_satuan'];
         }
         
-        $pengajuan->load(['user', 'ormawa', 'status', 'jenisSurat', 'itemsRab', 'historiStatus.status', 'historiStatus.user']);
+        // Status baru setelah direvisi, kembali ke 'Screening Ormawa'
+        $statusBaru = Status::where('nama_status', 'Screening Ormawa')->first();
 
-        return view('mahasiswa.pengajuan.show', compact('pengajuan'));
+        DB::beginTransaction();
+        try {
+            // Update data utama pengajuan
+            $pengajuan->ormawa_id = $request->ormawa_id;
+            $pengajuan->jenis_surat_id = $request->jenis_surat_id;
+            $pengajuan->judul_kegiatan = $request->judul_kegiatan;
+            $pengajuan->link_dokumen = $request->link_dokumen;
+            $pengajuan->total_rab = $totalRab;
+            $pengajuan->current_status_id = $statusBaru->status_id;
+            $pengajuan->save();
+
+            // Hapus item RAB lama dan buat ulang dengan yang baru
+            $pengajuan->itemsRab()->delete();
+            foreach ($request->items as $itemData) {
+                ItemRab::create([
+                    'pengajuan_id' => $pengajuan->pengajuan_id,
+                    'nama_item' => $itemData['nama_item'],
+                    'jumlah' => $itemData['jumlah'],
+                    'satuan' => $itemData['satuan'],
+                    'harga_satuan' => $itemData['harga_satuan'],
+                ]);
+            }
+
+            // Simpan histori status baru
+            HistoriStatus::create([
+                'pengajuan_id' => $pengajuan->pengajuan_id,
+                'status_id' => $statusBaru->status_id,
+                'diubah_oleh_user_id' => Auth::id(),
+                'timestamp' => now(),
+                'komentar' => 'Pengajuan telah direvisi dan diajukan kembali oleh mahasiswa.',
+            ]);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            // return back()->with('error', 'Gagal menyimpan perubahan: ' . $e->getMessage());
+            dd($e);
+        }
+
+        return redirect()->route('mahasiswa.pengajuan.show', $pengajuan->pengajuan_id)->with('success', 'Pengajuan berhasil diperbarui!');
     }
 }
 

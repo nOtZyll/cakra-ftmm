@@ -12,6 +12,14 @@ class HistoriStatus extends Model
     protected $table = 'histori_status';
     protected $primaryKey = 'histori_id';
 
+    protected $fillable = [
+        'pengajuan_id',
+        'status_id',
+        'diubah_oleh_user_id',
+        'timestamp',
+        'komentar',
+    ];
+
     public function pengajuan() {
         return $this->belongsTo(Pengajuan::class, 'pengajuan_id', 'pengajuan_id');
     }
