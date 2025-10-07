@@ -108,7 +108,7 @@
           <label class="flex items-center text-subtle-text-dark">
             <input type="checkbox" name="remember" class="mr-2 rounded border-gray-600 text-primary bg-gray-700 focus:ring-primary"> Ingat saya
           </label>
-          <a href="{{-- route('register') --}}" class="text-white hover:text-primary/80">Daftar</a>
+          <a href="{{ route('register') }}" class="text-white hover:text-primary/80">Daftar</a>
         </div>
 
         <!-- Tombol Login -->
