@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\LoginController; // <-- Impor Controller login
 use App\Http\Controllers\Auth\RegisterController; // <-- Impor Controller register
+use App\Http\Controllers\StaffOrmawaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,52 +70,11 @@ Route::prefix('mahasiswa')->name('mahasiswa.')->group(function () {
 */
 Route::prefix('staf-ormawa')->name('staf_ormawa.')->group(function () {
 
-    // dummy data pengajuan — nanti ganti dengan DB query (Model) saat backend siap
-    $dummyPengajuan = [
-        1 => [
-            'judul'      => 'Seminar Nasional Teknologi',
-            'pengaju'    => 'HIMA Informatika',
-            'tanggal'    => '12 Sept 2025',
-            'proposal'   => 'https://docs.google.com', // contoh link
-            'status'     => 'menunggu', // menunggu | disetujui | revisi
-            'rab'        => [
-                ['item' => 'Sewa Aula', 'jumlah' => 1, 'satuan' => 'Hari', 'harga' => 2000000, 'total' => 2000000],
-                ['item' => 'Konsumsi',  'jumlah' => 100, 'satuan' => 'Pax',  'harga' => 50000,   'total' => 5000000],
-            ],
-        ],
-        2 => [
-            'judul'      => 'Lomba Robotik',
-            'pengaju'    => 'UKM Robotika',
-            'tanggal'    => '15 Sept 2025',
-            'proposal'   => 'https://docs.google.com',
-            'status'     => 'revisi',
-            'rab'        => [
-                ['item' => 'Komponen Elektronik', 'jumlah' => 50, 'satuan' => 'Unit', 'harga' => 150000, 'total' => 7500000],
-                ['item' => 'Peralatan Bengkel',    'jumlah' => 10, 'satuan' => 'Set',  'harga' => 500000, 'total' => 5000000],
-            ],
-        ],
-    ];
+    // Rute dashboard sekarang memanggil metode 'index' di StaffOrmawaController
+    Route::get('/dashboard', [StaffOrmawaController::class, 'index'])->name('dashboard');
 
-    // Dashboard: kirim seluruh daftar pengajuan ke view (variabel $pengajuan)
-    Route::get('/dashboard', function () use ($dummyPengajuan) {
-        return view('staf_ormawa.dashboard', [
-            'role'      => 'staf_ormawa',
-            'user'      => ['name' => 'Siti Ormawa'],
-            'pengajuan' => $dummyPengajuan,
-        ]);
-    })->name('dashboard');
-
-    // Detail screening: menerima {id} dan kirim entri yang sesuai sebagai $pengajuan
-    Route::get('/screening/{id}', function ($id) use ($dummyPengajuan) {
-        $pengajuan = $dummyPengajuan[$id] ?? null;
-
-        return view('staf_ormawa.screening.show', [
-            'role'      => 'staf_ormawa',
-            'user'      => ['name' => 'Siti Ormawa'],
-            'id'        => $id,
-            'pengajuan' => $pengajuan,
-        ]);
-    })->name('screening.show');
+    // Rute screening sekarang memanggil metode 'show' di StaffOrmawaController
+    Route::get('/screening/{id}', [StaffOrmawaController::class, 'show'])->name('screening.show');
 
 });
 
