@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Testing\Fluent\Concerns\Has;
 
 class HistoriStatus extends Model
 {
+    use HasFactory;
+    protected $table = 'histori_status';
     protected $primaryKey = 'histori_id';
 
     public function pengajuan() {

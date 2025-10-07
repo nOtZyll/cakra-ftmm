@@ -531,6 +531,14 @@
                 </div>
             @endif
 
+            {{-- TAMBAHKAN BLOK INI untuk menampilkan pesan error dari controller --}}
+            @if (session('error'))
+                <div class="card bg-red-500/20 text-red-400 mb-4 p-4">
+                    <p class="font-bold">Terjadi Kesalahan:</p>
+                    <p class="text-sm">{{ session('error') }}</p>
+                </div>
+            @endif
+
             {{-- PERUBAHAN 1: Tag form dihubungkan ke backend --}}
             <form method="POST" action="{{ route('mahasiswa.pengajuan.store') }}" class="space-y-6 card">
                 @csrf
