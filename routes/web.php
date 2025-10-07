@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\LoginController; // <-- Impor Controller login
+use App\Http\Controllers\Auth\RegisterController; // <-- Impor Controller register
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +20,15 @@ Route::get('/', fn () => view('landing'))->name('landing');
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+
+/*
+|--------------------------------------------------------------------------
+| Register Routes (NYATA)
+|--------------------------------------------------------------------------
+*/
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register']);
 /*
 |--------------------------------------------------------------------------
 | Auth Routes (Login & Register Dummy)
@@ -54,6 +64,7 @@ Route::post('/register', function (Request $request) {
 })->name('register.post');
 
 Route::post('/logout', fn () => redirect()->route('landing'))->name('logout');
+
 
 /*
 |--------------------------------------------------------------------------
