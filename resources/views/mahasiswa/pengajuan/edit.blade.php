@@ -474,165 +474,89 @@
     </style>
 </head>
 <body>
-    <!-- Menu Toggle untuk Mobile -->
-    <button class="menu-toggle material-icons" id="menuToggle">menu</button>
+    <div class="form-container">
+        <h1 class="form-title">Perbaiki Pengajuan</h1>
+        <p class="form-subtitle">Perbarui detail pengajuan Anda sesuai catatan revisi.</p>
 
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="logo">
-            <h1>CAKRA</h1>
-        </div>
-        <a href="{{ route('mahasiswa.dashboard') }}" class="nav-item">
-            <span class="material-icons">dashboard</span>
-            <span class="nav-text">Dashboard</span>
-        </a>
-        <a href="{{ route('mahasiswa.pengajuan.index') }}" class="nav-item active">
-            <span class="material-icons">description</span>
-            <span class="nav-text">Pengajuan</span>
-        </a>
-        <a href="{{ route('mahasiswa.lpj.index') }}" class="nav-item">
-            <span class="material-icons">assignment</span>
-            <span class="nav-text">LPJ</span>
-        </a>
-        <a href="{{ route('logout') }}" class="nav-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-            <span class="material-icons">logout</span>
-            <span class="nav-text">Keluar</span>
-        </a>
-        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">@csrf</form>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content" id="mainContent">
-        <div class="header">
-            <div class="user-info">
-                <div class="avatar">
-                    <span class="material-icons">person</span>
-                </div>
-                <div class="user-details">
-                    <h2>Buat Pengajuan Baru</h2>
-                    <p>Isi formulir pengajuan kegiatan atau reimbursement</p>
-                </div>
+        {{-- INI BAGIAN PENTING UNTUK MENAMPILKAN ERROR --}}
+        @if ($errors->any())
+            <div class="card bg-red-500/20 text-red-400 mb-4 p-4">
+                <p class="font-bold mb-2">Terjadi kesalahan validasi:</p>
+                <ul class="list-disc list-inside text-sm">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
-        </div>
+        @endif
 
-        <div class="form-container">
-            <h1 class="form-title">Buat Pengajuan Baru</h1>
-            <p class="form-subtitle">Ajukan proposal kegiatan atau reimbursement untuk organisasi Anda</p>
+        {{-- PERUBAHAN 1: Action form mengarah ke 'update' dan methodnya 'PUT' --}}
+        <form method="POST" action="{{ route('mahasiswa.pengajuan.update', $pengajuan->pengajuan_id) }}" class="space-y-6 card">
+            @csrf
+            @method('PUT')
 
-            {{-- Menampilkan pesan error validasi jika ada --}}
-            @if ($errors->any())
-                <div class="card bg-red-500/20 text-red-400 mb-4 p-4">
-                    <p class="font-bold mb-2">Terjadi kesalahan:</p>
-                    <ul class="list-disc list-inside text-sm">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+            {{-- PERUBAHAN 2: Semua input diisi dengan data lama dari $pengajuan --}}
+            <div class="form-group">
+                <label class="form-label" for="ormawa_id">Pilih ORMAWA</label>
+                <select class="form-select" name="ormawa_id" id="ormawa_id" required>
+                    @foreach ($ormawas as $ormawa)
+                        <option value="{{ $ormawa->ormawa_id }}" {{ old('ormawa_id', $pengajuan->ormawa_id) == $ormawa->ormawa_id ? 'selected' : '' }}>
+                            {{ $ormawa->nama_ormawa }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="jenis_surat_id">Jenis Surat</label>
+                <select class="form-select" name="jenis_surat_id" id="jenis_surat_id" required>
+                    @foreach ($jenisSurats as $jenis)
+                        <option value="{{ $jenis->jenis_surat_id }}" {{ old('jenis_surat_id', $pengajuan->jenis_surat_id) == $jenis->jenis_surat_id ? 'selected' : '' }}>
+                            {{ $jenis->nama_jenis }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="judul_kegiatan">Judul Kegiatan</label>
+                <input type="text" class="form-input" name="judul_kegiatan" required value="{{ old('judul_kegiatan', $pengajuan->judul_kegiatan) }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="link_dokumen">Link Google Docs Proposal</label>
+                <input type="url" class="form-input" name="link_dokumen" required value="{{ old('link_dokumen', $pengajuan->link_dokumen) }}">
+            </div>
+
+            {{-- PERUBAHAN 3: Tabel RAB diisi dengan data item yang sudah ada --}}
+            <div class="form-group">
+                <label class="form-label">Rencana Anggaran Biaya (RAB)</label>
+                <div class="table-container">
+                    <table class="form-table" id="rabTable">
+                        {{-- ... (thead tidak berubah) ... --}}
+                        <tbody>
+                            @foreach (old('items', $pengajuan->itemsRab->toArray()) as $index => $item)
+                            <tr>
+                                <td><input type="text" name="items[{{ $index }}][nama_item]" value="{{ $item['nama_item'] }}" required></td>
+                                <td><input type="number" name="items[{{ $index }}][jumlah]" class="jumlah" value="{{ $item['jumlah'] }}" required></td>
+                                <td><input type="text" name="items[{{ $index }}][satuan]" value="{{ $item['satuan'] }}" required></td>
+                                <td><input type="number" name="items[{{ $index }}][harga_satuan]" class="harga" value="{{ $item['harga_satuan'] }}" required></td>
+                                <td class="total">0</td>
+                                <td><button type="button" onclick="hapusBaris(this)" class="btn btn-danger">Hapus</button></td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                         {{-- ... (tfoot tidak berubah) ... --}}
+                    </table>
                 </div>
-            @endif
+                <button type="button" onclick="tambahBaris()" class="btn btn-outline mt-3">Tambah Item</button>
+            </div>
 
-            {{-- TAMBAHKAN BLOK INI untuk menampilkan pesan error dari controller --}}
-            @if (session('error'))
-                <div class="card bg-red-500/20 text-red-400 mb-4 p-4">
-                    <p class="font-bold">Terjadi Kesalahan:</p>
-                    <p class="text-sm">{{ session('error') }}</p>
-                </div>
-            @endif
-
-            {{-- PERUBAHAN 1: Tag form dihubungkan ke backend --}}
-            <form method="POST" action="{{ route('mahasiswa.pengajuan.store') }}" class="space-y-6 card">
-                @csrf
-                <!-- Step 1: ORMAWA + Jenis Surat -->
-                <div class="form-group">
-                    <label class="form-label" for="ormawa_id">Pilih ORMAWA</label>
-                    {{-- PERUBAHAN 2: Dropdown diisi dari controller --}}
-                    <select class="form-select" name="ormawa_id" id="ormawa_id" required>
-                        <option value="">-- Pilih ORMAWA --</option>
-                        @foreach ($ormawas as $ormawa)
-                            <option value="{{ $ormawa->ormawa_id }}" {{ old('ormawa_id') == $ormawa->ormawa_id ? 'selected' : '' }}>
-                                {{ $ormawa->nama_ormawa }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="jenis_surat_id">Jenis Surat</label>
-                    <select class="form-select" name="jenis_surat_id" id="jenis_surat_id" required>
-                        <option value="">-- Pilih Jenis Surat --</option>
-                        @foreach ($jenisSurats as $jenis)
-                            <option value="{{ $jenis->jenis_surat_id }}" {{ old('jenis_surat_id') == $jenis->jenis_surat_id ? 'selected' : '' }}>
-                                {{ $jenis->nama_jenis }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Step 2: Detail Kegiatan -->
-                <div class="form-group">
-                    <label class="form-label" for="judul_kegiatan">Judul Kegiatan</label>
-                    {{-- PERUBAHAN 3: Tambah atribut 'name' dan 'value' --}}
-                    <input type="text" class="form-input" name="judul_kegiatan" id="judul_kegiatan" placeholder="Masukkan judul kegiatan" required value="{{ old('judul_kegiatan') }}">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="link_dokumen">Link Google Docs Proposal</label>
-                    <input type="url" class="form-input" name="link_dokumen" id="link_dokumen" placeholder="https://docs.google.com/document/d/..." required value="{{ old('link_dokumen') }}">
-                </div>
-
-                <!-- Step 3: Input RAB -->
-                <div class="form-group">
-                    <label class="form-label">Rencana Anggaran Biaya (RAB)</label>
-                    <div class="table-container">
-                        <table class="form-table" id="rabTable">
-                            <thead>
-                                <tr>
-                                    <th>Nama Item</th>
-                                    <th>Jumlah</th>
-                                    <th>Satuan</th>
-                                    <th>Harga Satuan (Rp)</th>
-                                    <th>Total (Rp)</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {{-- PERUBAHAN 4: Tambah atribut 'name' ke setiap input di tabel --}}
-                                <tr>
-                                    <td><input type="text" name="items[0][nama_item]" placeholder="Nama item" class="item-name" required></td>
-                                    <td><input type="number" name="items[0][jumlah]" class="jumlah" value="1" min="1" required></td>
-                                    <td><input type="text" name="items[0][satuan]" placeholder="Satuan" value="Unit" required></td>
-                                    <td><input type="number" name="items[0][harga_satuan]" class="harga" value="0" min="0" required></td>
-                                    <td class="total">0</td>
-                                    <td><button type="button" onclick="hapusBaris(this)" class="btn btn-danger">Hapus</button></td>
-                                </tr>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="4" class="table-total">Total Keseluruhan</td>
-                                    <td colspan="2" class="table-total" id="grandTotal">Rp 0</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                    <button type="button" onclick="tambahBaris()" class="btn btn-outline mt-3">
-                        <span class="material-icons">add</span>
-                        Tambah Item
-                    </button>
-                </div>
-
-                <!-- Submit Button -->
-                <div class="flex gap-4 mt-8">
-                    <a href="{{ route('mahasiswa.pengajuan.index') }}" class="btn btn-outline flex-1">
-                        <span class="material-icons">arrow_back</span>
-                        Kembali
-                    </a>
-                    <button type="submit" class="btn btn-accent flex-1">
-                        <span class="material-icons">save</span>
-                        Simpan Pengajuan
-                    </button>
-                </div>
-            </form>
-        </div>
+            <div class="flex gap-4 mt-8">
+                <a href="{{ route('mahasiswa.pengajuan.show', $pengajuan->pengajuan_id) }}" class="btn btn-outline flex-1">Batal</a>
+                <button type="submit" class="btn btn-accent flex-1">Simpan Perubahan</button>
+            </div>
+        </form>
     </div>
 
     <script>

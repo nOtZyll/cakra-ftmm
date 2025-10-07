@@ -7,6 +7,8 @@ use App\Http\Controllers\Auth\RegisterController; // <-- Impor Controller regist
 use App\Http\Controllers\StaffOrmawaController;
 use App\Http\Controllers\Mahasiswa\PengajuanController; // <-- Impor PengajuanController
 use App\Http\Controllers\Mahasiswa\LpjController; // <-- Impor LpjController
+use App\Http\Controllers\StafOrmawa\ScreeningController;
+use App\Http\Controllers\StafFakultas\VerifikasiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,21 +52,19 @@ Route::post('/register', [RegisterController::class, 'register']);
     Route::get('/lpj', [LpjController::class, 'index'])->name('lpj.index');
     Route::get('/lpj/create/{pengajuan}', [LpjController::class, 'create'])->name('lpj.create');
     Route::post('/lpj/{pengajuan}', [LpjController::class, 'store'])->name('lpj.store');
+    Route::get('/pengajuan/{pengajuan}/edit', [PengajuanController::class, 'edit'])->name('pengajuan.edit');
+    Route::put('/pengajuan/{pengajuan}', [PengajuanController::class, 'update'])->name('pengajuan.update');
 });
 
 /*
 |--------------------------------------------------------------------------
-| Staf Ormawa Routes (dengan dummy data untuk $pengajuan)
+| Staf Ormawa Routes 
 |--------------------------------------------------------------------------
 */
-Route::prefix('staf-ormawa')->name('staf_ormawa.')->group(function () {
-
-    // Rute dashboard sekarang memanggil metode 'index' di StaffOrmawaController
-    Route::get('/dashboard', [StaffOrmawaController::class, 'index'])->name('dashboard');
-
-    // Rute screening sekarang memanggil metode 'show' di StaffOrmawaController
-    Route::get('/screening/{id}', [StaffOrmawaController::class, 'show'])->name('screening.show');
-
+Route::middleware(['auth'])->prefix('staf-ormawa')->name('staf_ormawa.')->group(function () {
+    Route::get('/dashboard', [ScreeningController::class, 'index'])->name('dashboard');
+    Route::get('/screening/{pengajuan}', [ScreeningController::class, 'show'])->name('screening.show');
+    Route::put('/screening/{pengajuan}', [ScreeningController::class, 'updateStatus'])->name('screening.update');
 });
 
 /*
@@ -72,24 +72,11 @@ Route::prefix('staf-ormawa')->name('staf_ormawa.')->group(function () {
 | Staf Fakultas Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('staf-fakultas')->name('staf_fakultas.')->group(function () {
-    // Dashboard utama
-    Route::get('/dashboard', fn () => view('staf_fakultas.dashboard', [
-        'role' => 'staf_fakultas',
-        'user' => ['name' => 'Agus Fakultas']
-    ]))->name('dashboard');
-
-    // Verifikasi RAB (detail pengajuan RAB)
-    Route::get('/verifikasi/rab/{id}', fn ($id) => view('staf_fakultas.verifikasi.rab_show', [
-        'role' => 'staf_fakultas',
-        'user' => ['name' => 'Agus Fakultas'],
-        'id'   => $id,
-    ]))->name('verifikasi.rab');
-
-    // Verifikasi LPJ (detail pengajuan LPJ)
+Route::middleware(['auth'])->prefix('staf-fakultas')->name('staf_fakultas.')->group(function () {
+    // Arahkan dashboard ke method baru
+    Route::get('/dashboard', [VerifikasiController::class, 'dashboard'])->name('dashboard');
+    Route::get('/verifikasi/rab/{pengajuan}', [VerifikasiController::class, 'showRab'])->name('verifikasi.rab');
     Route::get('/verifikasi/lpj/{id}', fn ($id) => view('staf_fakultas.verifikasi.lpj_show', [
-        'role' => 'staf_fakultas',
-        'user' => ['name' => 'Agus Fakultas'],
         'id'   => $id,
     ]))->name('verifikasi.lpj');
 });

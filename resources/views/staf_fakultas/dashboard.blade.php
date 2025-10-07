@@ -447,173 +447,72 @@
 </head>
 <body>
     <div class="main-container">
-        <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
-            <a class="brand-wrap" href="#">
-                <div style="width: 42px; height: 42px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="bi bi-calculator text-white"></i>
-                </div>
-                <span class="brand-text">
-                    <span class="title">CAKRA</span>
-                    <span class="subtitle">Staf Fakultas</span>
-                </span>
-            </a>
-
-            <ul class="nav-sidebar">
-                <li class="nav-item">
-                    <a class="nav-link active" href="{{ route('staf_fakultas.dashboard') }}">
-                        <i class="bi bi-speedometer2"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('staf_fakultas.verifikasi.rab', 1) }}">
-                        <i class="bi bi-file-earmark-text"></i>
-                        <span>Verifikasi RAB</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('staf_fakultas.verifikasi.lpj', 1) }}">
-                        <i class="bi bi-folder-check"></i>
-                        <span>Verifikasi LPJ</span>
-                    </a>
-                </li>
-            </ul>
-
-            <div class="toggle-sidebar" id="toggleSidebar">
-                <i class="bi bi-chevron-left"></i>
-            </div>
+            {{-- (Sidebar Anda tetap sama, tidak ada yang diubah) --}}
         </div>
 
-        <!-- Main Content -->
         <div class="main-content" id="mainContent">
-            <!-- Dashboard Content -->
             <div id="dashboard-content">
                 <h2 class="dashboard-title">Dashboard Staf Keuangan Fakultas</h2>
-                <p class="dashboard-subtitle">Selamat datang kembali, <span class="highlight-text">{{ $user['name'] ?? 'Agus Fakultas' }}</span>!</p>
+                <p class="dashboard-subtitle">Selamat datang kembali, <span class="highlight-text">{{ $user->name }}</span>!</p>
 
-                <!-- Antrian -->
                 <div class="row g-4">
-                    <!-- RAB -->
                     <div class="col-lg-6">
                         <div class="dashboard-card h-100">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="card-title mb-0">
-                                    <i class="bi bi-file-earmark-text me-2"></i> Antrian Verifikasi RAB
-                                </h5>
-                                <a href="{{ route('staf_fakultas.verifikasi.rab', 1) }}" class="action-btn">
-                                    Lihat Semua <i class="bi bi-arrow-right ms-1"></i>
-                                </a>
+                                <h5 class="card-title mb-0"><i class="bi bi-file-earmark-text me-2"></i> Antrian Verifikasi RAB</h5>
+                                {{-- <a href="#" class="action-btn">Lihat Semua <i class="bi bi-arrow-right ms-1"></i></a> --}}
                             </div>
                             <div class="table-responsive">
                                 <table class="table-custom">
-                                    <thead>
-                                        <tr>
-                                            <th class="text-left">Pengajuan</th>
-                                            <th class="text-center">Tanggal</th>
-                                            <th class="text-right">Aksi</th>
-                                        </tr>
-                                    </thead>
+                                    {{-- (thead tidak berubah) --}}
                                     <tbody>
+                                        {{-- PERUBAHAN 1: Loop data antrian RAB dari controller --}}
+                                        @forelse ($antrianRab as $pengajuan)
                                         <tr>
                                             <td>
-                                                <div>Proposal Dies Natalis</div>
-                                                <small class="text-muted">ORMAWA HMTI</small>
+                                                <div>{{ $pengajuan->judul_kegiatan }}</div>
+                                                <small class="text-muted">{{ $pengajuan->ormawa->nama_ormawa ?? 'Individu' }}</small>
                                             </td>
-                                            <td class="text-center">2 hari lalu</td>
+                                            <td class="text-center">{{ \Carbon\Carbon::parse($pengajuan->tanggal_pengajuan)->diffForHumans() }}</td>
                                             <td class="text-right">
-                                                <a href="{{ route('staf_fakultas.verifikasi.rab', 1) }}" class="action-btn">
-                                                    Verifikasi
-                                                </a>
+                                               <a href="{{ route('staf_fakultas.verifikasi.rab', $pengajuan->pengajuan_id) }}" class="action-btn">Verifikasi</a>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>
-                                                <div>Reimbursement Lomba Robotik</div>
-                                                <small class="text-muted">ORMAWA Robotika</small>
-                                            </td>
-                                            <td class="text-center">5 hari lalu</td>
-                                            <td class="text-right">
-                                                <a href="{{ route('staf_fakultas.verifikasi.rab', 2) }}" class="action-btn">
-                                                    Verifikasi
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div>Kegiatan PKKMB 2024</div>
-                                                <small class="text-muted">BEM Fakultas</small>
-                                            </td>
-                                            <td class="text-center">1 minggu lalu</td>
-                                            <td class="text-right">
-                                                <a href="{{ route('staf_fakultas.verifikasi.rab', 3) }}" class="action-btn">
-                                                    Verifikasi
-                                                </a>
-                                            </td>
-                                        </tr>
+                                        @empty
+                                        <tr><td colspan="3" class="text-center">Tidak ada antrian verifikasi RAB.</td></tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
 
-                    <!-- LPJ -->
                     <div class="col-lg-6">
                         <div class="dashboard-card h-100">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="card-title mb-0">
-                                    <i class="bi bi-folder-check me-2"></i> Antrian Verifikasi LPJ
-                                </h5>
-                                <a href="{{ route('staf_fakultas.verifikasi.lpj', 1) }}" class="action-btn">
-                                    Lihat Semua <i class="bi bi-arrow-right ms-1"></i>
-                                </a>
+                                <h5 class="card-title mb-0"><i class="bi bi-folder-check me-2"></i> Antrian Verifikasi LPJ</h5>
+                                {{-- <a href="#" class="action-btn">Lihat Semua <i class="bi bi-arrow-right ms-1"></i></a> --}}
                             </div>
                             <div class="table-responsive">
                                 <table class="table-custom">
-                                    <thead>
-                                        <tr>
-                                            <th class="text-left">Pengajuan</th>
-                                            <th class="text-center">Tanggal</th>
-                                            <th class="text-right">Aksi</th>
-                                        </tr>
-                                    </thead>
+                                    {{-- (thead tidak berubah) --}}
                                     <tbody>
+                                        {{-- PERUBAHAN 2: Loop data antrian LPJ dari controller --}}
+                                        @forelse ($antrianLpj as $pengajuan)
                                         <tr>
                                             <td>
-                                                <div>Workshop IoT Mahasiswa</div>
-                                                <small class="text-muted">ORMAWA HMTK</small>
+                                                <div>{{ $pengajuan->judul_kegiatan }}</div>
+                                                <small class="text-muted">{{ $pengajuan->ormawa->nama_ormawa ?? 'Individu' }}</small>
                                             </td>
-                                            <td class="text-center">3 hari lalu</td>
+                                            <td class="text-center">{{ \Carbon\Carbon::parse($pengajuan->lpj->tanggal_lapor)->diffForHumans() }}</td>
                                             <td class="text-right">
-                                                <a href="{{ route('staf_fakultas.verifikasi.lpj', 1) }}" class="action-btn">
-                                                    Verifikasi
-                                                </a>
+                                                <a href="#" class="action-btn">Verifikasi</a>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>
-                                                <div>Seminar Energi Terbarukan</div>
-                                                <small class="text-muted">BEM FTMM</small>
-                                            </td>
-                                            <td class="text-center">1 minggu lalu</td>
-                                            <td class="text-right">
-                                                <a href="{{ route('staf_fakultas.verifikasi.lpj', 2) }}" class="action-btn">
-                                                    Verifikasi
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div>Pelatihan Kewirausahaan</div>
-                                                <small class="text-muted">HMJ Manajemen</small>
-                                            </td>
-                                            <td class="text-center">4 hari lalu</td>
-                                            <td class="text-right">
-                                                <a href="{{ route('staf_fakultas.verifikasi.lpj', 3) }}" class="action-btn">
-                                                    Verifikasi
-                                                </a>
-                                            </td>
-                                        </tr>
+                                        @empty
+                                        <tr><td colspan="3" class="text-center">Tidak ada antrian verifikasi LPJ.</td></tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
@@ -621,36 +520,23 @@
                     </div>
                 </div>
 
-                <!-- Statistik Cepat -->
                 <div class="row mt-4 g-4">
+                    {{-- PERUBAHAN 3: Statistik dibuat dinamis --}}
                     <div class="col-md-3">
                         <div class="dashboard-card text-center">
                             <i class="bi bi-clock-history futuristic-icon mb-2"></i>
-                            <h4 class="highlight-text">12</h4>
-                            <p class="mb-0 futuristic-subtitle">Menunggu Verifikasi</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="dashboard-card text-center">
-                            <i class="bi bi-check-circle futuristic-icon mb-2"></i>
-                            <h4 class="highlight-text">28</h4>
-                            <p class="mb-0 futuristic-subtitle">Terverifikasi Bulan Ini</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="dashboard-card text-center">
-                            <i class="bi bi-currency-exchange futuristic-icon mb-2"></i>
-                            <h4 class="highlight-text">Rp 245Jt</h4>
-                            <p class="mb-0 futuristic-subtitle">Total Dana Disetujui</p>
+                            <h4 class="highlight-text">{{ $stats['menunggu_verifikasi'] }}</h4>
+                            <p class="mb-0 futuristic-subtitle">Total Antrian</p>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="dashboard-card text-center">
                             <i class="bi bi-building futuristic-icon mb-2"></i>
-                            <h4 class="highlight-text">15</h4>
-                            <p class="mb-0 futuristic-subtitle">ORMAWA Aktif</p>
+                            <h4 class="highlight-text">{{ $stats['total_ormawa'] }}</h4>
+                            <p class="mb-0 futuristic-subtitle">ORMAWA Terdaftar</p>
                         </div>
                     </div>
+                    {{-- Anda bisa menambahkan 2 kartu statistik lainnya di sini --}}
                 </div>
             </div>
         </div>

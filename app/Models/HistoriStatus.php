@@ -2,11 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Testing\Fluent\Concerns\Has;
 
 class HistoriStatus extends Model
 {
+    use HasFactory;
+    protected $table = 'histori_status';
     protected $primaryKey = 'histori_id';
+
+    protected $fillable = [
+        'pengajuan_id',
+        'status_id',
+        'diubah_oleh_user_id',
+        'timestamp',
+        'komentar',
+    ];
 
     public function pengajuan() {
         return $this->belongsTo(Pengajuan::class, 'pengajuan_id', 'pengajuan_id');
