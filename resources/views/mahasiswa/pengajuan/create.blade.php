@@ -486,35 +486,19 @@
             <span class="material-icons">dashboard</span>
             <span class="nav-text">Dashboard</span>
         </a>
-        <a href="{{ route('mahasiswa.pengajuan.index') }}" class="nav-item">
+        <a href="{{ route('mahasiswa.pengajuan.index') }}" class="nav-item active">
             <span class="material-icons">description</span>
             <span class="nav-text">Pengajuan</span>
         </a>
-        <a href="{{ route('mahasiswa.lpj.create') }}" class="nav-item">
+        <a href="{{ route('mahasiswa.lpj.index') }}" class="nav-item">
             <span class="material-icons">assignment</span>
             <span class="nav-text">LPJ</span>
-        </a>
-        <a href="#" class="nav-item">
-            <span class="material-icons">history</span>
-            <span class="nav-text">Riwayat</span>
-        </a>
-        <a href="#" class="nav-item">
-            <span class="material-icons">notifications</span>
-            <span class="nav-text">Notifikasi</span>
-        </a>
-        <a href="#" class="nav-item">
-            <span class="material-icons">settings</span>
-            <span class="nav-text">Pengaturan</span>
         </a>
         <a href="{{ route('logout') }}" class="nav-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <span class="material-icons">logout</span>
             <span class="nav-text">Keluar</span>
         </a>
-        
-        <!-- Form Logout -->
-        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-            @csrf
-        </form>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">@csrf</form>
     </div>
 
     <!-- Main Content -->
@@ -535,47 +519,57 @@
             <h1 class="form-title">Buat Pengajuan Baru</h1>
             <p class="form-subtitle">Ajukan proposal kegiatan atau reimbursement untuk organisasi Anda</p>
 
-            <form class="space-y-6 card">
+            {{-- Menampilkan pesan error validasi jika ada --}}
+            @if ($errors->any())
+                <div class="card bg-red-500/20 text-red-400 mb-4 p-4">
+                    <p class="font-bold mb-2">Terjadi kesalahan:</p>
+                    <ul class="list-disc list-inside text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            {{-- PERUBAHAN 1: Tag form dihubungkan ke backend --}}
+            <form method="POST" action="{{ route('mahasiswa.pengajuan.store') }}" class="space-y-6 card">
+                @csrf
                 <!-- Step 1: ORMAWA + Jenis Surat -->
                 <div class="form-group">
-                    <label class="form-label">Pilih ORMAWA</label>
-                    <select class="form-select">
+                    <label class="form-label" for="ormawa_id">Pilih ORMAWA</label>
+                    {{-- PERUBAHAN 2: Dropdown diisi dari controller --}}
+                    <select class="form-select" name="ormawa_id" id="ormawa_id" required>
                         <option value="">-- Pilih ORMAWA --</option>
-                        <option>BEM Fakultas</option>
-                        <option>HIMA Teknik Informatika</option>
-                        <option>HIMA Sistem Informasi</option>
-                        <option>UKM Robotika</option>
-                        <option>UKM Seni Budaya</option>
+                        @foreach ($ormawas as $ormawa)
+                            <option value="{{ $ormawa->ormawa_id }}" {{ old('ormawa_id') == $ormawa->ormawa_id ? 'selected' : '' }}>
+                                {{ $ormawa->nama_ormawa }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Jenis Surat</label>
-                    <select class="form-select">
+                    <label class="form-label" for="jenis_surat_id">Jenis Surat</label>
+                    <select class="form-select" name="jenis_surat_id" id="jenis_surat_id" required>
                         <option value="">-- Pilih Jenis Surat --</option>
-                        <option>SPBD (Surat Pengantar Biaya Dana)</option>
-                        <option>Reimbursement</option>
+                        @foreach ($jenisSurats as $jenis)
+                            <option value="{{ $jenis->jenis_surat_id }}" {{ old('jenis_surat_id') == $jenis->jenis_surat_id ? 'selected' : '' }}>
+                                {{ $jenis->nama_jenis }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
                 <!-- Step 2: Detail Kegiatan -->
                 <div class="form-group">
-                    <label class="form-label">Judul Kegiatan</label>
-                    <input type="text" class="form-input" placeholder="Masukkan judul kegiatan">
+                    <label class="form-label" for="judul_kegiatan">Judul Kegiatan</label>
+                    {{-- PERUBAHAN 3: Tambah atribut 'name' dan 'value' --}}
+                    <input type="text" class="form-input" name="judul_kegiatan" id="judul_kegiatan" placeholder="Masukkan judul kegiatan" required value="{{ old('judul_kegiatan') }}">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Deskripsi Kegiatan</label>
-                    <textarea class="form-input" rows="3" placeholder="Jelaskan detail kegiatan yang akan dilaksanakan"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Link Google Docs Proposal</label>
-                    <input type="url" class="form-input" placeholder="https://docs.google.com/document/d/...">
-                    <a href="#" class="form-link">
-                        <span class="material-icons">download</span>
-                        Unduh Template Surat
-                    </a>
+                    <label class="form-label" for="link_dokumen">Link Google Docs Proposal</label>
+                    <input type="url" class="form-input" name="link_dokumen" id="link_dokumen" placeholder="https://docs.google.com/document/d/..." required value="{{ old('link_dokumen') }}">
                 </div>
 
                 <!-- Step 3: Input RAB -->
@@ -594,11 +588,12 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                {{-- PERUBAHAN 4: Tambah atribut 'name' ke setiap input di tabel --}}
                                 <tr>
-                                    <td><input type="text" placeholder="Nama item" class="item-name"></td>
-                                    <td><input type="number" class="jumlah" value="1" min="1"></td>
-                                    <td><input type="text" placeholder="Satuan" value="Unit"></td>
-                                    <td><input type="number" class="harga" value="0" min="0"></td>
+                                    <td><input type="text" name="items[0][nama_item]" placeholder="Nama item" class="item-name" required></td>
+                                    <td><input type="number" name="items[0][jumlah]" class="jumlah" value="1" min="1" required></td>
+                                    <td><input type="text" name="items[0][satuan]" placeholder="Satuan" value="Unit" required></td>
+                                    <td><input type="number" name="items[0][harga_satuan]" class="harga" value="0" min="0" required></td>
                                     <td class="total">0</td>
                                     <td><button type="button" onclick="hapusBaris(this)" class="btn btn-danger">Hapus</button></td>
                                 </tr>
@@ -606,7 +601,7 @@
                             <tfoot>
                                 <tr>
                                     <td colspan="4" class="table-total">Total Keseluruhan</td>
-                                    <td colspan="2" class="table-total" id="grandTotal">0</td>
+                                    <td colspan="2" class="table-total" id="grandTotal">Rp 0</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -617,16 +612,9 @@
                     </button>
                 </div>
 
-                <!-- Step 4: Upload Dokumen Pendukung -->
-                <div class="form-group">
-                    <label class="form-label">Dokumen Pendukung (Opsional)</label>
-                    <input type="file" class="form-input">
-                    <p class="text-sm text-gray-400 mt-1">Unggah dokumen pendukung seperti surat undangan, proposal lengkap, dll.</p>
-                </div>
-
                 <!-- Submit Button -->
                 <div class="flex gap-4 mt-8">
-                    <a href="{{ route('mahasiswa.dashboard') }}" class="btn btn-outline flex-1">
+                    <a href="{{ route('mahasiswa.pengajuan.index') }}" class="btn btn-outline flex-1">
                         <span class="material-icons">arrow_back</span>
                         Kembali
                     </a>
@@ -640,21 +628,10 @@
     </div>
 
     <script>
+        let rowIndex = 1;
+        
         document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.getElementById('menuToggle');
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            
-            // Toggle sidebar untuk mobile
-            if (menuToggle) {
-                menuToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('active');
-                    mainContent.classList.toggle('sidebar-active');
-                    this.classList.toggle('click-feedback');
-                });
-            }
-            
-            // Inisialisasi perhitungan total
+            // ... (Kode toggle sidebar Anda)
             hitungTotal();
             pasangListener();
         });
@@ -668,24 +645,27 @@
                 row.querySelector(".total").innerText = total.toLocaleString('id-ID');
                 grandTotal += total;
             });
-            document.getElementById("grandTotal").innerText = grandTotal.toLocaleString('id-ID');
+            document.getElementById("grandTotal").innerText = 'Rp ' + grandTotal.toLocaleString('id-ID');
         }
 
         function tambahBaris() {
-            let row = `
+            // PERUBAHAN 5: Sesuaikan 'name' pada baris baru yang dibuat
+            let rowHTML = `
             <tr>
-                <td><input type="text" placeholder="Nama item" class="item-name"></td>
-                <td><input type="number" class="jumlah" value="1" min="1"></td>
-                <td><input type="text" placeholder="Satuan" value="Unit"></td>
-                <td><input type="number" class="harga" value="0" min="0"></td>
+                <td><input type="text" name="items[${rowIndex}][nama_item]" placeholder="Nama item" class="item-name" required></td>
+                <td><input type="number" name="items[${rowIndex}][jumlah]" class="jumlah" value="1" min="1" required></td>
+                <td><input type="text" name="items[${rowIndex}][satuan]" placeholder="Satuan" value="Unit" required></td>
+                <td><input type="number" name="items[${rowIndex}][harga_satuan]" class="harga" value="0" min="0" required></td>
                 <td class="total">0</td>
                 <td><button type="button" onclick="hapusBaris(this)" class="btn btn-danger">Hapus</button></td>
             </tr>`;
-            document.querySelector("#rabTable tbody").insertAdjacentHTML("beforeend", row);
+            document.querySelector("#rabTable tbody").insertAdjacentHTML("beforeend", rowHTML);
             pasangListener();
+            rowIndex++;
         }
 
         function hapusBaris(btn) {
+            // ... (Fungsi hapusBaris Anda tidak perlu diubah)
             if (document.querySelectorAll("#rabTable tbody tr").length > 1) {
                 btn.closest("tr").remove();
                 hitungTotal();
@@ -694,12 +674,10 @@
             }
         }
 
-        function pasangListener() {
-            document.querySelectorAll(".jumlah, .harga").forEach(input => {
-                input.removeEventListener("input", hitungTotal);
-                input.addEventListener("input", hitungTotal);
-            });
-        }
-    </script>
-</body>
-</html>
+    function pasangListener() {
+        document.querySelectorAll(".jumlah, .harga").forEach(input => {
+            input.removeEventListener("input", hitungTotal);
+            input.addEventListener("input", hitungTotal);
+        });
+    }
+</script>

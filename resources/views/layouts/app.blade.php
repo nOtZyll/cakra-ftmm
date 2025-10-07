@@ -11,11 +11,11 @@
 <body class="flex min-h-screen bg-gradient-to-br from-[#0f172a] to-[#1e293b] text-white">
     
     {{-- Sidebar --}}
-    @include('partials.sidebar')
+    @include('layouts.partials.sidebar')
 
     <div class="flex-1 flex flex-col">
         {{-- Navbar --}}
-        @include('partials.navbar')
+        @include('layouts.partials.navbar')
 
         {{-- Konten Halaman --}}
         <main class="p-6">

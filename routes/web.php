@@ -5,6 +5,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\LoginController; // <-- Impor Controller login
 use App\Http\Controllers\Auth\RegisterController; // <-- Impor Controller register
 use App\Http\Controllers\StaffOrmawaController;
+use App\Http\Controllers\Mahasiswa\PengajuanController; // <-- Impor PengajuanController
+use App\Http\Controllers\Mahasiswa\LpjController; // <-- Impor LpjController
 
 /*
 |--------------------------------------------------------------------------
@@ -33,34 +35,21 @@ Route::post('/register', [RegisterController::class, 'register']);
 
 /*
 |--------------------------------------------------------------------------
-| Mahasiswa Routes
+| Mahasiswa Routes (NYATA)
 |--------------------------------------------------------------------------
+| - Dibungkus dengan middleware 'auth' agar hanya bisa diakses setelah login.
+| - Semua rute mengarah ke PengajuanController.
 */
-Route::prefix('mahasiswa')->name('mahasiswa.')->group(function () {
-    Route::get('/dashboard', fn () => view('mahasiswa.dashboard', [
-        'role' => 'mahasiswa',
-        'user' => ['name' => 'Budi Mahasiswa']
-    ]))->name('dashboard');
+    Route::middleware(['auth'])->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
+    Route::get('/dashboard', [PengajuanController::class, 'dashboard'])->name('dashboard');
+    Route::get('/pengajuan', [PengajuanController::class, 'index'])->name('pengajuan.index');
+    Route::get('/pengajuan/create', [PengajuanController::class, 'create'])->name('pengajuan.create');
+    Route::post('/pengajuan', [PengajuanController::class, 'store'])->name('pengajuan.store');
+    Route::get('/pengajuan/{pengajuan}', [PengajuanController::class, 'show'])->name('pengajuan.show');
 
-    Route::get('/pengajuan', fn () => view('mahasiswa.pengajuan.index', [
-        'role' => 'mahasiswa',
-        'user' => ['name' => 'Budi Mahasiswa']
-    ]))->name('pengajuan.index');
-
-    Route::get('/pengajuan/create', fn () => view('mahasiswa.pengajuan.create', [
-        'role' => 'mahasiswa',
-        'user' => ['name' => 'Budi Mahasiswa']
-    ]))->name('pengajuan.create');
-
-    Route::get('/pengajuan/show', fn () => view('mahasiswa.pengajuan.show', [
-        'role' => 'mahasiswa',
-        'user' => ['name' => 'Budi Mahasiswa']
-    ]))->name('pengajuan.show');
-
-    Route::get('/lpj/create', fn () => view('mahasiswa.lpj.create', [
-        'role' => 'mahasiswa',
-        'user' => ['name' => 'Budi Mahasiswa']
-    ]))->name('lpj.create');
+    Route::get('/lpj', [LpjController::class, 'index'])->name('lpj.index');
+    Route::get('/lpj/create/{pengajuan}', [LpjController::class, 'create'])->name('lpj.create');
+    Route::post('/lpj/{pengajuan}', [LpjController::class, 'store'])->name('lpj.store');
 });
 
 /*
