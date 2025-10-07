@@ -188,7 +188,7 @@ class PengajuanController extends Controller
         return view('mahasiswa.pengajuan.edit', compact('pengajuan', 'ormawas', 'jenisSurats'));
     }
 
-    /**
+/**
      * --- METHOD BARU: Menyimpan perubahan dari form edit ---
      */
     public function update(Request $request, Pengajuan $pengajuan)
@@ -207,7 +207,7 @@ class PengajuanController extends Controller
             'items' => 'required|array|min:1',
             // ... (validasi item sama seperti store)
         ]);
- 
+
         $totalRab = 0;
         foreach ($request->items as $item) {
             $totalRab += $item['jumlah'] * $item['harga_satuan'];
@@ -251,12 +251,10 @@ class PengajuanController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            // return back()->with('error', 'Gagal menyimpan perubahan: ' . $e->getMessage());
-            dd($e);
+            return back()->with('error', 'Gagal menyimpan perubahan: ' . $e->getMessage());
         }
 
         return redirect()->route('mahasiswa.pengajuan.show', $pengajuan->pengajuan_id)->with('success', 'Pengajuan berhasil diperbarui!');
-        $pengajuan->load(['user', 'ormawa', 'status', 'jenisSurat', 'itemsRab', 'historiStatus.status', 'historiStatus.user']);
     }
 }
 
