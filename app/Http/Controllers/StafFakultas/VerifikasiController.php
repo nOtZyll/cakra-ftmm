@@ -10,12 +10,37 @@ use App\Models\Lpj;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+
 
 class VerifikasiController extends Controller
 {
     /**
      * Menampilkan dashboard utama untuk Staf Keuangan Fakultas.
      */
+    public function updateStatus(Request $request, Pengajuan $pengajuan)
+    {
+        $request->validate(['action' => 'required|in:setuju,revisi']);
+        $action = $request->input('action');
+
+        $newStatus = $action === 'setuju'
+            ? Status::where('nama_status', 'Disetujui')->firstOrFail()
+            : Status::where('nama_status', 'Revisi')->firstOrFail();
+
+        $pengajuan->status()->associate($newStatus);
+        $pengajuan->save();
+
+        HistoriStatus::create([
+            'pengajuan_id' => $pengajuan->pengajuan_id,
+            'status_id' => $newStatus->status_id,
+            'diubah_oleh_user_id' => Auth::id(),
+        ]);
+
+        return redirect()->route('staf_fakultas.dashboard')
+            ->with('success', $action === 'setuju'
+                ? 'Pengajuan telah disetujui.'
+                : 'Pengajuan telah dikembalikan untuk revisi.');
+    }
     public function dashboard()
     {
         $user = Auth::user();
@@ -32,7 +57,7 @@ class VerifikasiController extends Controller
         // Ambil data pengajuan yang LPJ-nya perlu diverifikasi (status_lpj: Menunggu Verifikasi)
         $antrianLpj = Pengajuan::with(['user', 'ormawa', 'lpj']) // Pastikan relasi lpj di-load
             ->whereHas('lpj', function ($query) {
-                $query->where('status_lpj', 'Menunggu Verifikasi');
+                $query->where('status_lpj', 'Menunggu Verifikasi Fakultas'); // ✅
             })
             ->orderBy('updated_at', 'asc')
             ->take(5)
@@ -55,81 +80,68 @@ class VerifikasiController extends Controller
         $pengajuan->load(['user', 'ormawa', 'status', 'itemsRab']);
         return view('staf_fakultas.verifikasi.rab_show', compact('pengajuan'));
     }
+    public function showLpj(Lpj $lpj)
+    {
+        $lpj->load(['pengajuan.user','pengajuan.ormawa','pengajuan.itemsRab','items']);
+        return view('staf_fakultas.verifikasi.lpj_show', [
+            'lpj' => $lpj,
+            'pengajuan' => $lpj->pengajuan,
+        ]);
+    }
 
     /**
      * Memproses update status verifikasi RAB (Setuju/Revisi) tanpa komentar.
      */
-    public function updateStatus(Request $request, Pengajuan $pengajuan)
-    {
-        $request->validate(['action' => 'required|in:setuju,revisi']);
-        $action = $request->input('action');
-
-        if ($action === 'setuju') {
-            $newStatus = Status::where('nama_status', 'Disetujui')->firstOrFail();
-            $pesan = 'Pengajuan telah disetujui.';
-        } else { // 'revisi'
-            $newStatus = Status::where('nama_status', 'Revisi')->firstOrFail();
-            $pesan = 'Pengajuan telah dikembalikan untuk revisi.';
-        }
-
-        $pengajuan->status()->associate($newStatus);
-        $pengajuan->save();
-
-        HistoriStatus::create([
-            'pengajuan_id' => $pengajuan->pengajuan_id,
-            'status_id' => $newStatus->status_id,
-            'diubah_oleh_user_id' => Auth::id(),
-        ]);
-
-        return redirect()->route('staf_fakultas.dashboard')->with('success', $pesan);
-    }
-
-    /**
-     * Menampilkan halaman detail untuk verifikasi LPJ.
-     */
-    public function showLpj(Lpj $lpj)
-    {
-        $lpj->load(['pengajuan.user', 'pengajuan.ormawa', 'pengajuan.itemsRab', 'itemsLpj']);
-        return view('staf_fakultas.verifikasi.lpj_show', [
-            'lpj' => $lpj,
-            'pengajuan' => $lpj->pengajuan
-        ]);
-    }
-
-    /**
-     * Memproses dan memperbarui status LPJ (Setuju/Tolak) tanpa komentar.
-     */
     public function updateLpjStatus(Request $request, Lpj $lpj)
     {
-        // Validasi diubah menjadi 'setuju' atau 'tolak'
+        // Guard status: hanya boleh saat masih di antrian Fakultas
+        if ($lpj->status_lpj !== 'Menunggu Verifikasi Fakultas') {
+            return redirect()
+                ->route('staf_fakultas.dashboard')
+                ->with('warning', 'LPJ ini tidak sedang menunggu verifikasi fakultas.');
+        }
+
+        // Idempoten: kalau sudah disetujui, jangan apa-apa
+        if ($lpj->status_lpj === 'Disetujui') {
+            return redirect()
+                ->route('staf_fakultas.dashboard')
+                ->with('info', 'LPJ ini sudah disetujui sebelumnya.');
+        }
+
+        // Tidak ada opsi tolak lagi → validasi cukup setuju
         $request->validate([
-            'action' => 'required|in:setuju,tolak',
+            'action' => 'required|in:setuju',
         ]);
 
-        $action = $request->input('action');
-
-        if ($action === 'setuju') {
+        DB::transaction(function () use ($lpj) {
+            // 1) LPJ final → Disetujui
             $lpj->status_lpj = 'Disetujui';
-            $pesan = 'LPJ telah berhasil disetujui.';
-        } else { // 'tolak'
-            $lpj->status_lpj = 'Ditolak'; // Status diubah menjadi 'Ditolak'
-            $pesan = 'LPJ telah ditolak.';
-        }
-        
-        $lpj->save();
+            $lpj->komentar   = null;
+            $lpj->save();
 
-        // Membuat catatan histori (disesuaikan untuk 'Ditolak')
-        $namaStatusHistori = ($action === 'setuju') ? 'LPJ Disetujui' : 'LPJ Ditolak';
-        $statusUntukHistori = Status::where('nama_status', $namaStatusHistori)->first();
+            // 2) Pengajuan → Selesai
+            $statusSelesai = Status::where('nama_status', 'Selesai')->firstOrFail();
 
-        if ($statusUntukHistori) {
+            if (method_exists($lpj->pengajuan, 'status')) {
+                $lpj->pengajuan->status()->associate($statusSelesai);
+            } else {
+                // kalau skemamu pakai kolom FK eksplisit
+                $lpj->pengajuan->current_status_id = $statusSelesai->status_id;
+            }
+            $lpj->pengajuan->save();
+
+            // 3) Histori status (Selesai)
             HistoriStatus::create([
-                'pengajuan_id' => $lpj->pengajuan_id,
-                'status_id' => $statusUntukHistori->status_id,
+                'pengajuan_id'        => $lpj->pengajuan_id,
+                'status_id'           => $statusSelesai->status_id,
                 'diubah_oleh_user_id' => Auth::id(),
+                'komentar'            => 'LPJ disetujui oleh Staf Fakultas; pengajuan dinyatakan selesai.',
             ]);
-        }
+        });
 
-        return redirect()->route('staf_fakultas.dashboard')->with('success', $pesan);
+        return redirect()
+            ->route('staf_fakultas.dashboard')
+            ->with('success', 'LPJ disetujui dan Pengajuan dinyatakan Selesai.');
     }
+
 }

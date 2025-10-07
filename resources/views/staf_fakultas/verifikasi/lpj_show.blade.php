@@ -139,7 +139,6 @@
                 @method('PUT')
     
                 <div class="d-flex gap-4 mt-6">
-                    <button type="submit" name="action" value="tolak" class="btn btn-danger">Tolak LPJ</button>
                     <button type="submit" name="action" value="setuju" class="btn btn-success">Setujui LPJ</button>
                 </div>
             </form>

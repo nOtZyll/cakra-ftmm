@@ -2,14 +2,14 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Buat LPJ - CAKRA</title>
+    <title>Edit LPJ - CAKRA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     {{-- Fonts & Icons --}}
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-    {{-- Alpine.js (untuk baris dinamis) --}}
+    {{-- Alpine.js --}}
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
     <style>
@@ -85,14 +85,15 @@
         .tag{display:inline-flex;align-items:center;background:rgba(7,55,99,.25);border:1px solid rgba(116,24,71,.25);padding:4px 8px;border-radius:999px;color:#E5E7EB;font-size:.85rem}
         .material-icons{font-size:18px;vertical-align:middle}
         @media(min-width:768px){.md\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+        a.link{color:#93C5FD;text-decoration:none} a.link:hover{text-decoration:underline}
     </style>
 </head>
 <body>
 <div class="main-content">
     {{-- Header --}}
     <div class="page-header">
-        <h1 class="page-title">Buat Laporan Pertanggungjawaban (LPJ)</h1>
-        <p class="page-subtitle">Lengkapi realisasi biaya sesuai bukti/nota. Pastikan total tidak melebihi RAB.</p>
+        <h1 class="page-title">Edit Laporan Pertanggungjawaban (LPJ)</h1>
+        <p class="page-subtitle">Perbaiki data realisasi dan unggah nota baru jika ada perubahan.</p>
     </div>
 
     {{-- Ringkasan Pengajuan --}}
@@ -100,15 +101,15 @@
         <div class="grid md:grid-cols-3 gap-4">
             <div>
                 <p class="text-subtext-dark">Judul Kegiatan</p>
-                <p class="font-semibold">{{ $pengajuan->judul_kegiatan }}</p>
+                <p class="font-semibold">{{ $lpj->pengajuan->judul_kegiatan }}</p>
             </div>
             <div>
-                <p class="text-subtext-dark">Ormawa Pengaju</p>
-                <p class="font-semibold">{{ $pengajuan->ormawa->nama_ormawa ?? '—' }}</p>
+                <p class="text-subtext-dark">Ormawa</p>
+                <p class="font-semibold">{{ $lpj->pengajuan->ormawa->nama_ormawa ?? '—' }}</p>
             </div>
             <div>
                 <p class="text-subtext-dark">Total RAB Disetujui</p>
-                <span class="tag">Rp {{ number_format($pengajuan->total_rab, 0, ',', '.') }}</span>
+                <span class="tag">Rp {{ number_format($lpj->pengajuan->total_rab, 0, ',', '.') }}</span>
             </div>
         </div>
     </div>
@@ -130,19 +131,37 @@
         </div>
     @endif
 
-    {{-- FORM LPJ --}}
+    {{-- FORM EDIT LPJ --}}
+    @php
+        $initialRows = $lpj->items->map(function($it){
+            return [
+                'id'            => $it->item_lpj_id ?? $it->id ?? null,
+                'nama_item'     => $it->nama_pengeluaran,
+                'jumlah'        => (int) $it->jumlah_realisasi,
+                'satuan'        => $it->satuan,
+                'harga_satuan'  => (float) $it->harga_realisasi,
+                'nota_url'      => $it->path_foto_nota ? asset('storage/'.$it->path_foto_nota) : null,
+                'nota_path'     => $it->path_foto_nota, // jika controller mau pakai untuk keep lama
+            ];
+        })->values()->toJson();
+    @endphp
+
     <div
         class="card"
-        x-data="lpjCreate({ totalRab: {{ (float) $pengajuan->total_rab }} })"
+        x-data='lpjEdit({
+            totalRab: {{ (float) $lpj->pengajuan->total_rab }},
+            initialRows: {!! $initialRows !!},
+        })'
     >
         <div class="form-title">Rincian Realisasi</div>
-        <p class="muted mb-4">Unggah nota untuk setiap pengeluaran (Gambar/PDF, maksimal 5MB).</p>
+        <p class="muted mb-4">Jika tidak mengunggah nota baru, nota lama akan tetap digunakan.</p>
 
         <form method="POST"
-              action="{{ route('mahasiswa.lpj.store', $pengajuan->pengajuan_id) }}"
+              action="{{ route('mahasiswa.lpj.update', $lpj->lpj_id) }}"
               enctype="multipart/form-data"
               x-on:submit="return beforeSubmit()">
             @csrf
+            @method('PUT')
 
             <div class="table-container">
                 <table class="form-table">
@@ -159,6 +178,13 @@
                     <tbody>
                         <template x-for="(row, i) in rows" :key="i">
                             <tr>
+                                {{-- Hidden ID agar controller bisa update (atau abaikan jika recreate) --}}
+                                <template x-if="row.id">
+                                    <td style="display:none">
+                                        <input type="hidden" :name="`items[${i}][id]`" x-model="row.id">
+                                    </td>
+                                </template>
+
                                 {{-- Nama --}}
                                 <td>
                                     <input type="text"
@@ -199,11 +225,22 @@
 
                                 {{-- Nota --}}
                                 <td class="text-center">
-                                    <input type="file"
-                                           :name="`items[${i}][nota]`"
-                                           accept="image/*,application/pdf"
-                                           required>
-                                    <div class="muted" style="font-size:.8rem;margin-top:6px">max 5MB</div>
+                                    <div>
+                                        <template x-if="row.nota_url">
+                                            <div class="mb-2">
+                                                <a :href="row.nota_url" class="link" target="_blank">Lihat Nota Lama</a>
+                                            </div>
+                                        </template>
+                                        {{-- hidden existing path (opsional; jika controller butuh keep) --}}
+                                        <template x-if="row.nota_path">
+                                            <input type="hidden" :name="`items[${i}][existing_path]`" x-model="row.nota_path">
+                                        </template>
+
+                                        <input type="file"
+                                               :name="`items[${i}][nota]`"
+                                               accept="image/*,application/pdf">
+                                        <div class="muted" style="font-size:.8rem;margin-top:6px">Kosongkan bila tidak ganti nota (maks 5MB)</div>
+                                    </div>
                                 </td>
 
                                 {{-- Aksi --}}
@@ -238,7 +275,7 @@
 
             <div style="display:flex;gap:10px;flex-wrap:wrap">
                 <button type="submit" class="btn btn-primary">
-                    <span class="material-icons">send</span> Kirim LPJ
+                    <span class="material-icons">save</span> Simpan Perubahan
                 </button>
                 <a href="{{ route('mahasiswa.lpj.index') }}" class="btn btn-ghost">
                     <span class="material-icons">arrow_back</span> Kembali
@@ -249,14 +286,14 @@
 </div>
 
 <script>
-function lpjCreate({ totalRab }) {
+function lpjEdit({ totalRab, initialRows }) {
     return {
         totalRab,
-        rows: [
-            { nama_item: '', jumlah: 1, satuan: '', harga_satuan: 0 }
-        ],
+        rows: Array.isArray(initialRows) && initialRows.length
+            ? initialRows
+            : [{ id:null, nama_item:'', jumlah:1, satuan:'', harga_satuan:0, nota_url:null, nota_path:null }],
         add() {
-            this.rows.push({ nama_item: '', jumlah: 1, satuan: '', harga_satuan: 0 });
+            this.rows.push({ id:null, nama_item:'', jumlah:1, satuan:'', harga_satuan:0, nota_url:null, nota_path:null });
         },
         remove(i) {
             if (this.rows.length > 1) this.rows.splice(i, 1);
@@ -273,8 +310,8 @@ function lpjCreate({ totalRab }) {
             return 'Rp ' + n.toLocaleString('id-ID', { maximumFractionDigits: 0 });
         },
         beforeSubmit() {
-            // Biarkan server juga memvalidasi. Jika mau cegah submit saat over, uncomment baris di bawah.
-            // if (this.grandTotal() > this.totalRab) return confirm('Total melebihi RAB. Tetap kirim?');
+            // Biarkan server validasi juga. Bisa tambahkan konfirmasi jika over.
+            // if (this.grandTotal() > this.totalRab) return confirm('Total melebihi RAB. Tetap simpan?');
             return true;
         }
     }

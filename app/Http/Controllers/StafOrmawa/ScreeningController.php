@@ -7,6 +7,7 @@ use App\Models\Pengajuan;
 use App\Models\Status;
 use App\Models\HistoriStatus;
 use Illuminate\Http\Request;
+use App\Models\Lpj; // <-- Tambahkan ini
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -20,21 +21,35 @@ class ScreeningController extends Controller
         $user = Auth::user();
         $ormawaId = $user->ormawa_id;
 
+        // Jika user tidak terhubung dengan ormawa, kirim data kosong
         if (!$ormawaId) {
-            return view('staf_ormawa.dashboard', ['pengajuans' => collect()]);
+            return view('staf_ormawa.dashboard', [
+                'daftarPengajuan' => collect(),
+                'daftarLpj' => collect()
+            ]);
         }
 
-        // Ambil data pengajuan dari ormawa yang sama dengan status 'Screening Ormawa'
+        // Ambil data pengajuan PROPOSAL dari ormawa yang sama dengan status 'Screening Ormawa'
         $daftarPengajuan = Pengajuan::with(['user', 'status'])
             ->where('ormawa_id', $ormawaId)
             ->whereHas('status', function ($query) {
                 $query->where('nama_status', 'Screening Ormawa');
             })
             ->orderBy('tanggal_pengajuan', 'asc')
-            ->paginate(10);
+            ->get();
 
-        return view('staf_ormawa.dashboard', compact('daftarPengajuan'));
+        // Ambil data pengajuan LPJ dari ormawa yang sama dengan status 'Menunggu Screening Ormawa'
+        $daftarLpj = Lpj::with(['pengajuan.user'])
+            ->whereHas('pengajuan', function ($query) use ($ormawaId) {
+                $query->where('ormawa_id', $ormawaId);
+            })
+            ->where('status_lpj', 'Menunggu Screening Ormawa')
+            ->get();
+
+        // Kirim KEDUA variabel ke view
+        return view('staf_ormawa.dashboard', compact('daftarPengajuan', 'daftarLpj'));
     }
+
 
     /**
      * Menampilkan detail satu pengajuan untuk di-screening.
@@ -94,5 +109,45 @@ class ScreeningController extends Controller
         $histori->save();
 
         return redirect()->route('staf_ormawa.dashboard')->with('success', 'Status pengajuan berhasil diperbarui.');
+    }
+        // ==================================================================
+    // ==> TAMBAHKAN DUA METHOD BARU DI BAWAH INI <==
+    // ==================================================================
+    
+    /**
+     * Menampilkan halaman detail untuk screening LPJ.
+     */
+    public function showLpj(Lpj $lpj)
+    {
+        $lpj->load(['pengajuan.itemsRab', 'itemsLpj']);
+        return view('staf_ormawa.screening.lpj_show', [
+            'lpj' => $lpj,
+            'pengajuan' => $lpj->pengajuan
+        ]);
+    }
+
+    /**
+     * Memproses aksi screening LPJ (Setuju/Revisi).
+     */
+    public function updateLpjStatus(Request $request, Lpj $lpj)
+    {
+        $request->validate(['aksi' => 'required|in:setujui,revisi']);
+        
+        $aksi = $request->input('aksi');
+
+        if ($aksi === 'setujui') {
+            // Jika disetujui, LPJ dikirim ke Staf Fakultas
+            $lpj->status_lpj = 'Menunggu Verifikasi Fakultas';
+            $pesan = 'LPJ berhasil disetujui dan diteruskan ke Staf Fakultas.';
+        } else { // 'revisi'
+            // Jika direvisi, dikembalikan ke Mahasiswa
+            $lpj->status_lpj = 'Perlu Revisi (Ormawa)';
+            $lpj->komentar = $request->input('komentar'); // Ambil komentar revisi
+            $pesan = 'LPJ telah dikembalikan ke mahasiswa untuk direvisi.';
+        }
+
+        $lpj->save();
+
+        return redirect()->route('staf_ormawa.dashboard')->with('success', $pesan);
     }
 }

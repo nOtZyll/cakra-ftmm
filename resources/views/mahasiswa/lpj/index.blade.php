@@ -577,28 +577,54 @@
         }
     </style>
 </head>
-   <body>
-        @include('layouts.partials.sidebar') {{-- Asumsi Anda punya sidebar --}}
+ <body>
+    @include('layouts.partials.sidebar') {{-- Asumsi Anda punya sidebar --}}
 
-        <div class="main-content">
-            <h1 class="page-title">Pilih Pengajuan untuk Dilaporkan</h1>
-            <p class="page-subtitle">Berikut adalah daftar pengajuan yang sudah disetujui dan siap untuk dibuatkan Laporan Pertanggungjawaban (LPJ).</p>
-            
-            <div class="pengajuan-list">
-                @forelse ($pengajuans as $p)
-                    <div class="glass-card">
-                        <h4>{{ $p->judul_kegiatan }}</h4>
-                        <p>Total Dana Disetujui: Rp {{ number_format($p->total_rab, 0, ',', '.') }}</p>
-                        <a href="{{ route('mahasiswa.lpj.create', $p->pengajuan_id) }}" class="btn btn-primary mt-4">
-                            Buat LPJ
-                        </a>
-                    </div>
-                @empty
-                    <div class="empty-state card">
-                        <p>Tidak ada pengajuan yang siap untuk dilaporkan.</p>
-                    </div>
-                @endforelse
-            </div>
+    <div class="main-content">
+        <h1 class="page-title">Status Laporan Pertanggungjawaban (LPJ)</h1>
+        <p class="page-subtitle">Buat laporan untuk pengajuan yang telah disetujui atau perbaiki LPJ yang dikembalikan.</p>
+
+        {{-- Menampilkan Pesan Sukses atau Peringatan --}}
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+        @if(session('warning'))
+            <div class="alert alert-warning">{{ session('warning') }}</div>
+        @endif
+    
+        <div class="glass-card mb-4">
+            <h3 class="summary-title">Siap Dilaporkan</h3>
+            @forelse ($siapDibuat as $p)
+                <div class="summary-detail">
+                    <span>
+                        <strong>{{ $p->judul_kegiatan }}</strong><br>
+                        <small style="color: var(--subtext-dark);">Disetujui: {{ \Carbon\Carbon::parse($p->updated_at)->format('d M Y') }}</small>
+                    </span>
+                    <a href="{{ route('mahasiswa.lpj.create', $p->pengajuan_id) }}" class="btn btn-primary">
+                        Buat LPJ
+                    </a>
+                </div>
+            @empty
+                <p style="color: var(--subtext-dark); text-align: center; padding: 1rem 0;">Tidak ada pengajuan yang siap untuk dilaporkan.</p>
+            @endforelse
         </div>
-    </body>
-    </html>
+        
+        <div class="glass-card">
+            <h3 class="summary-title" style="color: var(--warning);">Perlu Direvisi</h3>
+            @forelse ($perluDirevisi as $lpj)
+                <div class="summary-detail">
+                    <span>
+                        <strong>{{ $lpj->pengajuan->judul_kegiatan }}</strong><br>
+                        <small style="color: var(--subtext-dark);">Komentar: {{ $lpj->komentar ?? 'Tidak ada komentar.' }}</small>
+                    </span>
+                    <a href="{{ route('mahasiswa.lpj.edit', $lpj->lpj_id) }}" class="btn btn-warning">
+                        Perbaiki LPJ
+                    </a>
+                </div>
+            @empty
+                <p style="color: var(--subtext-dark); text-align: center; padding: 1rem 0;">Tidak ada LPJ yang perlu direvisi.</p>
+            @endforelse
+        </div>
+    </div>
+</body>
+</html>

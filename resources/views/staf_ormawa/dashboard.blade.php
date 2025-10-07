@@ -145,6 +145,40 @@
                 </table>
             </div>
         </div>
+                <div class="glass-card" style="margin-top: 30px;">
+            <h2 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 20px;">Antrian Screening LPJ</h2>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>JUDUL KEGIATAN</th>
+                            <th>PENGAJU</th>
+                            <th>TANGGAL LAPOR LPJ</th>
+                            <th>STATUS</th>
+                            <th>AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($daftarLpj as $lpj)
+                        <tr>
+                            <td>{{ $lpj->pengajuan->judul_kegiatan }}</td>
+                            <td>{{ $lpj->pengajuan->user->name ?? 'N/A' }}</td>
+                            <td>{{ \Carbon\Carbon::parse($lpj->tanggal_lapor)->format('d M Y') }}</td>
+                            <td>
+                                <span class="status menunggu">{{ $lpj->status_lpj }}</span>
+                            </td>
+                            <td>
+                                <a href="{{ route('staf_ormawa.screening.lpj.show', $lpj->lpj_id) }}" class="btn btn-primary">Screening LPJ</a>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 20px;">Belum ada LPJ yang perlu di-screening.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
     </div>
 </body>
 </html>
