@@ -19,4 +19,12 @@ class User extends Authenticatable {
     public function role() {
         return $this->belongsTo(Role::class, 'role_id', 'role_id');
     }
+
+    public function pengajuan() {
+        return $this->hasMany(Pengajuan::class, 'user_id', 'user_id');
+    }
+
+    public function ormawa() {
+        return $this->belongsTo(Ormawa::class, 'ormawa_id', 'ormawa_id');
+    }
 }
