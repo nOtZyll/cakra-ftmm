@@ -11,8 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('item_lpjs', function (Blueprint $table) {
-            $table->id();
+        Schema::create('item_lpj', function (Blueprint $table) {
+            $table->id('item_lpj_id');
+            $table->foreignId('lpj_id')->constrained('lpj', 'lpj_id')->onDelete('cascade');
+            $table->string('nama_pengeluaran', 255)->nullable();
+            $table->integer('jumlah_realisasi')->nullable();
+            $table->string('satuan', 50)->nullable();
+            $table->decimal('harga_realisasi', 15, 2)->nullable();
+            $table->string('path_foto_nota', 255)->nullable();
             $table->timestamps();
         });
     }

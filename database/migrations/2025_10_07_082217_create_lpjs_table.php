@@ -11,11 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('lpjs', function (Blueprint $table) {
-            $table->id();
+        Schema::create('lpj', function (Blueprint $table) {
+            $table->id('lpj_id');
+            $table->foreignId('pengajuan_id')->unique()->constrained('pengajuan', 'pengajuan_id'); // Relasi One-to-One
+            $table->datetime('tanggal_lapor')->nullable();
+            $table->decimal('total_realisasi', 15, 2)->nullable();
+            $table->string('status_lpj', 50)->nullable();
             $table->timestamps();
         });
     }
+
 
     /**
      * Reverse the migrations.

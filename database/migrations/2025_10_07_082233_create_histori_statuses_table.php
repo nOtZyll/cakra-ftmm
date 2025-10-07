@@ -11,8 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('histori_statuses', function (Blueprint $table) {
-            $table->id();
+        Schema::create('histori_status', function (Blueprint $table) {
+            $table->id('histori_id');
+            $table->foreignId('pengajuan_id')->constrained('pengajuan', 'pengajuan_id')->onDelete('cascade');
+            $table->foreignId('status_id')->constrained('status', 'status_id');
+            $table->foreignId('diubah_oleh_user_id')->constrained('users', 'user_id');
+            $table->datetime('timestamp')->nullable();
+            $table->text('komentar')->nullable();
             $table->timestamps();
         });
     }

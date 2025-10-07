@@ -11,8 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('item_rabs', function (Blueprint $table) {
-            $table->id();
+        Schema::create('item_rab', function (Blueprint $table) {
+            $table->id('item_rab_id');
+            $table->foreignId('pengajuan_id')->constrained('pengajuan', 'pengajuan_id')->onDelete('cascade');
+            $table->string('nama_item', 255)->nullable();
+            $table->integer('jumlah')->nullable();
+            $table->string('satuan', 50)->nullable();
+            $table->decimal('harga_satuan', 15, 2)->nullable();
             $table->timestamps();
         });
     }
