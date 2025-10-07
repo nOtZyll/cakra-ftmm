@@ -166,7 +166,7 @@ class PengajuanController extends Controller
         }
 
         $pengajuan->load(['user', 'ormawa', 'status', 'itemsRab']);
-        return view('staf_ormawa.screening.show', compact('pengajuan'));
+        return view('mahasiswa.pengajuan.show', compact('pengajuan'));
     }
         /**
      * --- METHOD BARU: Menampilkan form untuk mengedit pengajuan ---

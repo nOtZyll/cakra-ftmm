@@ -683,8 +683,10 @@
                                         <td class="amount">Rp <span x-text="row.total.toLocaleString('id-ID')"></span></td>
                                         <td>
                                             <div class="file-input-container">
-                                                <input type="file" class="file-input" :name="`items[${index}][nota]`" accept="image/*" required>
-                                                <label class="file-input-label">Unggah</label>
+                                                <input type="file" class="file-input" :name="`items[${index}][nota]`" accept="image/*" 
+                                                       @change="row.notaName = $event.target.files.length > 0 ? $event.target.files[0].name : 'Unggah Nota'" 
+                                                       required>
+                                                <label class="file-input-label" x-text="row.notaName"></label>
                                             </div>
                                         </td>
                                         <td><button type="button" @click="removeRow(index)" class="btn btn-error btn-sm">Hapus</button></td>
@@ -715,11 +717,15 @@
         // Alpine.js function
         function lpjForm(config) {
             return {
-                rows: [{ nama_item: '', jumlah: 1, satuan: 'Unit', harga_satuan: 0, total: 0 }],
+                // Tambahkan 'notaName' saat inisialisasi
+                rows: [{ nama_item: '', jumlah: 1, satuan: 'Unit', harga_satuan: 0, total: 0, notaName: 'Unggah Nota' }],
                 grandTotal: 0,
-                totalRab: config.totalRab, // Menerima total RAB dari backend
+                totalRab: config.totalRab,
                 init() { this.calculateGrandTotal(); },
-                addRow() { this.rows.push({ nama_item: '', jumlah: 1, satuan: 'Unit', harga_satuan: 0, total: 0 }); },
+                addRow() {
+                    // Tambahkan 'notaName' juga saat menambah baris baru
+                    this.rows.push({ nama_item: '', jumlah: 1, satuan: 'Unit', harga_satuan: 0, total: 0, notaName: 'Unggah Nota' });
+                },
                 removeRow(index) { if (this.rows.length > 1) { this.rows.splice(index, 1); this.calculateGrandTotal(); } },
                 calculateTotal(index) { let row = this.rows[index]; row.total = row.jumlah * row.harga_satuan; this.calculateGrandTotal(); },
                 calculateGrandTotal() { this.grandTotal = this.rows.reduce((sum, row) => sum + row.total, 0); }

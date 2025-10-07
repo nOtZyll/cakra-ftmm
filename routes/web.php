@@ -58,7 +58,7 @@ Route::post('/register', [RegisterController::class, 'register']);
 
 /*
 |--------------------------------------------------------------------------
-| Staf Ormawa Routes 
+| Staf Ormawa Routes
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->prefix('staf-ormawa')->name('staf_ormawa.')->group(function () {
@@ -76,9 +76,12 @@ Route::middleware(['auth'])->prefix('staf-fakultas')->name('staf_fakultas.')->gr
     // Arahkan dashboard ke method baru
     Route::get('/dashboard', [VerifikasiController::class, 'dashboard'])->name('dashboard');
     Route::get('/verifikasi/rab/{pengajuan}', [VerifikasiController::class, 'showRab'])->name('verifikasi.rab');
-    Route::get('/verifikasi/lpj/{id}', fn ($id) => view('staf_fakultas.verifikasi.lpj_show', [
-        'id'   => $id,
-    ]))->name('verifikasi.lpj');
+    Route::put('/verifikasi/rab/{pengajuan}', [VerifikasiController::class, 'updateStatus'])->name('verifikasi.update');
+    // Route untuk MENAMPILKAN halaman verifikasi LPJ
+    Route::get('/verifikasi/lpj/{lpj}', [VerifikasiController::class, 'showLpj'])->name('verifikasi.lpj.show');
+
+    // Route untuk MEMPROSES aksi (Setuju/Revisi) LPJ
+    Route::put('/verifikasi/lpj/{lpj}', [VerifikasiController::class, 'updateLpjStatus'])->name('verifikasi.lpj.update');
 });
 
 /*
