@@ -16,7 +16,13 @@
         }
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif}
         body{background:var(--bg-dark);color:var(--text-dark);min-height:100vh}
-        .container{max-width:1200px;margin:0 auto;padding:28px}
+        .container{
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            padding-block: 28px;
+            padding-inline: clamp(24px, 6vw, 56px);
+            }
 
         .page-title{font-size:1.8rem;font-weight:700;margin-bottom:8px}
         .page-sub{color:var(--subtext);margin-bottom:22px}
