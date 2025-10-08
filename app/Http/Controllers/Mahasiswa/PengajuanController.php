@@ -16,9 +16,6 @@ use Carbon\Carbon;
 
 class PengajuanController extends Controller
 {
-    /**
-     * Menampilkan halaman dashboard mahasiswa.
-     */
     public function dashboard()
     {
         $user = Auth::user();
@@ -43,10 +40,6 @@ class PengajuanController extends Controller
 
         return view('mahasiswa.dashboard', compact('user', 'pengajuanBerjalan', 'notifikasiRevisi'));
     }
-
-    /**
-     * Menampilkan halaman riwayat pengajuan.
-     */
     public function index()
     {
         $pengajuans = Pengajuan::with(['user', 'ormawa', 'status'])
@@ -57,9 +50,6 @@ class PengajuanController extends Controller
         return view('mahasiswa.pengajuan.index', compact('pengajuans'));
     }
 
-    /**
-     * Menampilkan form untuk membuat pengajuan baru.
-     */
     public function create()
     {
         $ormawas = Ormawa::orderBy('nama_ormawa')->get();
@@ -67,47 +57,20 @@ class PengajuanController extends Controller
         return view('mahasiswa.pengajuan.create', compact('ormawas', 'jenisSurats'));
     }
 
-    /**
-     * Menyimpan data pengajuan baru ke database.
-     */
     public function store(Request $request)
     {
-        /**
-         * --- LANGKAH DEBUGGING ---
-         * Hapus tanda komentar (//) dari baris di bawah ini untuk mengaktifkan dd().
-         * Ini akan menghentikan semua proses dan menampilkan data yang dikirim dari form Anda.
-         */
-        // dd($request->all());
-
-        // 1. Validasi semua input
-        // $request->validate([
-        //     'ormawa_id' => 'required|exists:ormawa,ormawa_id',
-        //     'jenis_surat_id' => 'required|exists:jenis_surat,jenis_surat_id',
-        //     'judul_kegiatan' => 'required|string|max:255',
-        //     'link_dokumen' => 'required|url',
-        //     'items' => 'required|array|min:1',
-        //     'items.*.nama_item' => 'required|string|max:255',
-        //     'items.*.jumlah' => 'required|integer|min:1',
-        //     'items.*.satuan' => 'required|string|max:50',
-        //     'items.*.harga_satuan' => 'required|numeric|min:0',
-        // ]);
-
-        // 2. Hitung total RAB
         $totalRab = 0;
         foreach ($request->items as $item) {
             $totalRab += $item['jumlah'] * $item['harga_satuan'];
         }
         
-        // 3. Ambil status awal dari database
         $statusAwal = Status::where('nama_status', 'Screening Ormawa')->first();
         if (!$statusAwal) {
              return back()->with('error', 'Status awal "Screening Ormawa" tidak ditemukan. Hubungi admin.');
         }
 
-        // 4. Gunakan Transaction untuk memastikan semua data tersimpan atau tidak sama sekali
         DB::beginTransaction();
         try {
-            // Simpan data utama ke tabel 'pengajuan'
             $pengajuan = new Pengajuan();
             $pengajuan->user_id = Auth::id();
             $pengajuan->ormawa_id = $request->ormawa_id;
@@ -119,7 +82,6 @@ class PengajuanController extends Controller
             $pengajuan->current_status_id = $statusAwal->status_id;
             $pengajuan->save();
 
-            // Simpan setiap item RAB ke tabel 'item_rab'
             foreach ($request->items as $itemData) {
                 $itemRab = new ItemRab();
                 $itemRab->pengajuan_id = $pengajuan->pengajuan_id;
@@ -130,7 +92,6 @@ class PengajuanController extends Controller
                 $itemRab->save();
             }
 
-            // Simpan histori status pertama
             $histori = new HistoriStatus();
             $histori->pengajuan_id = $pengajuan->pengajuan_id;
             $histori->status_id = $statusAwal->status_id;
@@ -139,45 +100,28 @@ class PengajuanController extends Controller
             $histori->komentar = 'Pengajuan berhasil dibuat oleh mahasiswa.';
             $histori->save();
 
-            DB::commit(); // Konfirmasi semua penyimpanan jika tidak ada error
+            DB::commit();
         } catch (\Exception $e) {
-            DB::rollBack(); // Batalkan semua jika ada error
-            // Tampilkan pesan error untuk debugging
+            DB::rollBack();
             return back()->withInput()->with('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage());
         }
 
-        // 5. Arahkan kembali ke halaman riwayat dengan pesan sukses
         return redirect()->route('mahasiswa.pengajuan.index')->with('success', 'Pengajuan berhasil dibuat dan sedang dalam proses screening!');
     }
-
-    /**
-     * Menampilkan detail satu pengajuan.
-     */
     public function show(Pengajuan $pengajuan)
     {
-        /**
-         * --- DEBUGGING WAJIB ---
-         * Baris ini HARUS dieksekusi. Jika tidak, ada masalah di file rute.
-         */
-
-        // Kode di bawah ini tidak akan berjalan karena ada dd() di atas
         if ($pengajuan->ormawa_id !== Auth::user()->ormawa_id) {
             abort(403, 'AKSES DITOLAK');
         }
 
         $pengajuan->load(['user', 'ormawa', 'status', 'itemsRab']);
-        return view('staf_ormawa.screening.show', compact('pengajuan'));
+        return view('mahasiswa.pengajuan.show', compact('pengajuan'));
     }
-        /**
-     * --- METHOD BARU: Menampilkan form untuk mengedit pengajuan ---
-     */
     public function edit(Pengajuan $pengajuan)
     {
-        // Proteksi: pastikan user hanya bisa mengedit pengajuannya sendiri
         if ($pengajuan->user_id !== Auth::id()) {
             abort(403);
         }
-        // Proteksi: pastikan hanya bisa diedit jika statusnya 'Revisi'
         if ($pengajuan->status->nama_status !== 'Revisi') {
             return redirect()->route('mahasiswa.pengajuan.show', $pengajuan->pengajuan_id)->with('error', 'Pengajuan ini tidak dapat diedit.');
         }
@@ -187,18 +131,11 @@ class PengajuanController extends Controller
 
         return view('mahasiswa.pengajuan.edit', compact('pengajuan', 'ormawas', 'jenisSurats'));
     }
-
-    /**
-     * --- METHOD BARU: Menyimpan perubahan dari form edit ---
-     */
     public function update(Request $request, Pengajuan $pengajuan)
     {
-        // Proteksi
         if ($pengajuan->user_id !== Auth::id()) {
             abort(403);
         }
-
-        // Validasi (sama seperti store)
         $request->validate([
             'ormawa_id' => 'required|exists:ormawa,ormawa_id',
             'jenis_surat_id' => 'required|exists:jenis_surat,jenis_surat_id',

@@ -5,581 +5,174 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Staf Fakultas - CAKRA</title>
     
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Google Fonts: Orbitron + Poppins -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
     <style>
-        /* VARIABEL WARNA DAN TEMA CAKRA */
+        /* --- CSS Mandiri yang Konsisten --- */
         :root {
             --primary: #073763;
             --accent: #741847;
             --bg-dark: #0A192F;
             --text-dark: #E0E6F1;
             --subtext-dark: #94A3B8;
-            --card-bg: rgba(7, 55, 99, 0.1);
         }
 
-        /* STYLING DASAR CAKRA */
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-dark);
-            line-height: 1.6;
-            overflow-x: hidden;
-            padding-top: 0;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-dark); min-height: 100vh; display: flex; }
 
-        /* LAYOUT SIDEBAR DAN KONTEN UTAMA */
-        .main-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* SIDEBAR STYLING */
+        /* Sidebar Styling */
         .sidebar {
-            width: 280px;
-            background: rgba(7, 55, 99, 0.15);
+            width: 250px;
+            background: rgba(7, 55, 99, 0.1);
             backdrop-filter: blur(10px);
             border-right: 1px solid rgba(116, 24, 71, 0.2);
-            padding: 1.5rem 1rem;
-            position: fixed;
+            padding: 20px 0;
             height: 100vh;
-            overflow-y: auto;
-            z-index: 1000;
-            transition: all 0.3s ease;
+            position: fixed;
+            z-index: 100;
         }
+        .logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(116, 24, 71, 0.2); margin-bottom: 20px; }
+        .logo h1 { font-size: 1.5rem; font-weight: 700; background: linear-gradient(90deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-item { padding: 12px 20px; display: flex; align-items: center; color: var(--subtext-dark); text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; }
+        .nav-item:hover, .nav-item.active { background: linear-gradient(90deg, rgba(7, 55, 99, 0.2), rgba(116, 24, 71, 0.1)); color: var(--text-dark); border-left-color: var(--accent); }
+        .nav-item .material-icons { margin-right: 10px; font-size: 20px; }
+        .nav-text { font-size: 0.9rem; }
 
-        .sidebar.collapsed {
-            width: 80px;
-        }
+        /* Main Content Styling */
+        .main-content { flex: 1; margin-left: 250px; padding: 30px; }
+        .page-header { margin-bottom: 30px; }
+        .page-title { font-size: 1.8rem; font-weight: 700; }
+        .page-subtitle { color: var(--subtext-dark); }
+        .highlight-text { color: #7ca2c5; font-weight: 600; }
 
-        .sidebar.collapsed .brand-text,
-        .sidebar.collapsed .nav-link span {
-            display: none;
-        }
-
-        .sidebar.collapsed .nav-link {
-            justify-content: center;
-            padding: 0.75rem;
-        }
-
-        .brand-wrap { 
-            display: flex; 
-            align-items: center; 
-            gap: 12px;
-            text-decoration: none;
-            margin-bottom: 2rem;
-            padding: 0.5rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .brand-wrap:hover {
-            background: rgba(7, 55, 99, 0.2);
-        }
-
-        .brand-text { 
-            display: flex; 
-            flex-direction: column; 
-            line-height: 1.2;
-        }
-
-        .brand-text .title { 
-            font-weight: 700;
-            font-size: 1.4rem;
-            font-family: 'Orbitron', sans-serif;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: 0.5px;
-            animation: colorSweep 3s ease-in-out infinite;
-        }
-
-        .brand-text .subtitle { 
-            font-size: 0.75rem; 
-            color: var(--subtext-dark);
-            font-weight: 400;
-        }
-
-        .nav-sidebar {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .nav-sidebar .nav-item {
-            margin-bottom: 0.5rem;
-        }
-
-        .nav-sidebar .nav-link {
-            color: var(--subtext-dark);
-            text-decoration: none;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .nav-sidebar .nav-link:hover {
-            background: rgba(7, 55, 99, 0.2);
-            color: var(--text-dark);
-        }
-
-        .nav-sidebar .nav-link.active {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            box-shadow: 0 4px 12px rgba(7, 55, 99, 0.3);
-        }
-
-        .nav-sidebar .nav-link i {
-            font-size: 1.2rem;
-            width: 24px;
-            text-align: center;
-        }
-
-        .toggle-sidebar {
-            position: absolute;
-            bottom: 1rem;
-            left: 1rem;
-            background: rgba(7, 55, 99, 0.2);
-            border: 1px solid rgba(116, 24, 71, 0.2);
-            color: var(--subtext-dark);
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .toggle-sidebar:hover {
-            background: rgba(7, 55, 99, 0.3);
-            color: var(--text-dark);
-        }
-
-        /* KONTEN UTAMA */
-        .main-content {
-            flex: 1;
-            margin-left: 280px;
-            padding: 2rem;
-            transition: all 0.3s ease;
-        }
-
-        .main-content.expanded {
-            margin-left: 80px;
-        }
-
-        /* GLASSMORPHISM EFFECT */
-        .glass-card {
+        /* Komponen */
+        .card {
             background: rgba(7, 55, 99, 0.1);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(116, 24, 71, 0.2);
             border-radius: 12px;
-        }
-
-        /* BUTTON STYLING CAKRA */
-        .btn-custom {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            font-weight: 600;
-            border-radius: 8px;
-            padding: 12px 30px;
-            border: none;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            font-family: 'Orbitron', sans-serif;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-custom::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn-custom:hover::before {
-            left: 100%;
-        }
-
-        .btn-custom:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-        }
-
-        /* ANIMATIONS */
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-
-        .floating {
-            animation: float 3s ease-in-out infinite;
-        }
-
-        /* COLOR SWEEP ANIMATION */
-        @keyframes colorSweep {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        /* STYLING KHUSUS DASHBOARD */
-        .dashboard-container {
-            padding: 0;
-        }
-
-        .dashboard-title {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            font-family: 'Orbitron', sans-serif;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: colorSweep 5s ease-in-out infinite;
-        }
-
-        .dashboard-subtitle {
-            color: var(--subtext-dark);
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-        }
-
-        .dashboard-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(116, 24, 71, 0.2);
-            border-radius: 12px;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
+            padding: 20px;
             height: 100%;
         }
+        .form-title { font-size: 1.3rem; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 10px; }
+        
+        /* Tabel */
+        .table-container { overflow-x: auto; }
+        .form-table { width: 100%; border-collapse: collapse; }
+        .form-table th, .form-table td { padding: 12px 15px; border-bottom: 1px solid rgba(116, 24, 71, 0.1); text-align: left; }
+        .form-table thead th { background: rgba(7, 55, 99, 0.2); }
+        .form-table tbody tr:hover { background: rgba(7, 55, 99, 0.15); }
+        
+        /* Tombol */
+        .btn { display: inline-block; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; transition: all 0.3s ease; }
+        .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+        .btn-outline:hover { background: var(--accent); color: white; }
 
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(116, 24, 71, 0.4);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-title {
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--text-dark);
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.3rem;
-        }
-
-        .table-custom {
-            width: 100%;
-            color: var(--text-dark);
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
-        .table-custom thead th {
-            background: rgba(7, 55, 99, 0.2);
-            color: var(--subtext-dark);
-            font-weight: 600;
-            border-bottom: 1px solid rgba(116, 24, 71, 0.3);
-            padding: 0.75rem;
-        }
-
-        .table-custom tbody tr {
-            transition: all 0.3s ease;
-        }
-
-        .table-custom tbody tr:hover {
-            background: rgba(7, 55, 99, 0.1);
-        }
-
-        .table-custom tbody td {
-            padding: 0.75rem;
-            border-bottom: 1px solid rgba(116, 24, 71, 0.1);
-        }
-
-        .badge-custom {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            font-weight: 500;
-            border-radius: 6px;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-        }
-
-        .futuristic-icon {
-            font-size: 2.4rem;
-            color: #7ca2c5;
-            text-shadow: 0 0 12px rgba(124, 162, 197, 0.7),
-                         0 0 24px rgba(124, 162, 197, 0.5);
-        }
-
-        .futuristic-title {
-            color: #7ca2c5;
-            font-size: 1.3rem;
-            text-shadow: 0 0 10px rgba(124, 162, 197, 0.8),
-                         0 0 20px rgba(124, 162, 197, 0.4);
-            letter-spacing: 0.5px;
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        .futuristic-subtitle {
-            color: var(--subtext-dark);
-            font-size: 0.95rem;
-        }
-
-        .futuristic-btn {
-            background: linear-gradient(135deg, #7ca2c5, #a3c2e0);
-            color: var(--bg-dark);
-            font-weight: 600;
-            border: none;
-            border-radius: 0.5rem;
-            padding: 6px 16px;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(124, 162, 197, 0.3);
-            font-family: 'Orbitron', sans-serif;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .futuristic-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 20px rgba(124, 162, 197, 0.6);
-            color: var(--bg-dark);
-        }
-
-        .highlight-text {
-            color: #7ca2c5;
-            font-weight: 600;
-        }
-
-        .text-accent {
-            color: var(--accent);
-            font-weight: 600;
-        }
-
-        .action-btn {
-            background: rgba(116, 24, 71, 0.2);
-            color: var(--text-dark);
-            border: 1px solid rgba(116, 24, 71, 0.3);
-            border-radius: 6px;
-            padding: 4px 12px;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .action-btn:hover {
-            background: rgba(116, 24, 71, 0.3);
-            color: var(--text-dark);
-            transform: translateY(-1px);
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 992px) {
-            .sidebar {
-                width: 80px;
-            }
-            
-            .sidebar .brand-text,
-            .sidebar .nav-link span {
-                display: none;
-            }
-            
-            .sidebar .nav-link {
-                justify-content: center;
-                padding: 0.75rem;
-            }
-            
-            .main-content {
-                margin-left: 80px;
-            }
-            
-            .toggle-sidebar {
-                display: none;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-title {
-                font-size: 1.8rem;
-            }
-            
-            .dashboard-subtitle {
-                font-size: 1rem;
-            }
-            
-            .sidebar {
-                width: 60px;
-            }
-            
-            .main-content {
-                margin-left: 60px;
-                padding: 1rem;
-            }
-        }
+        /* Utility & Grid */
+        .grid { display: grid; }
+        .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .gap-6 { gap: 1.5rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .d-flex { display: flex; }
+        .justify-between { justify-content: space-between; }
+        .align-center { align-items: center; }
+        .mb-4 { margin-bottom: 1rem; }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <div class="sidebar" id="sidebar">
-            {{-- (Sidebar Anda tetap sama, tidak ada yang diubah) --}}
+    <div class="sidebar" id="sidebar">
+        <div class="logo"><h1>CAKRA</h1></div>
+        
+        <a href="{{ route('staf_fakultas.dashboard') }}" class="nav-item active">
+            <span class="material-icons">dashboard</span>
+            <span class="nav-text">Dashboard</span>
+        </a>
+        
+        {{-- Menu Logout --}}
+        <a href="{{ route('logout') }}" class="nav-item"
+           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+            <span class="material-icons">logout</span>
+            <span class="nav-text">Keluar</span>
+        </a>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+            @csrf
+        </form>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div class="page-header">
+            <h1 class="page-title">Dashboard Staf Keuangan</h1>
+            <p class="page-subtitle">Selamat datang kembali, <span class="highlight-text">{{ $user->name }}</span>!</p>
         </div>
 
-        <div class="main-content" id="mainContent">
-            <div id="dashboard-content">
-                <h2 class="dashboard-title">Dashboard Staf Keuangan Fakultas</h2>
-                <p class="dashboard-subtitle">Selamat datang kembali, <span class="highlight-text">{{ $user->name }}</span>!</p>
-
-                <div class="row g-4">
-                    <div class="col-lg-6">
-                        <div class="dashboard-card h-100">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="card-title mb-0"><i class="bi bi-file-earmark-text me-2"></i> Antrian Verifikasi RAB</h5>
-                                {{-- <a href="#" class="action-btn">Lihat Semua <i class="bi bi-arrow-right ms-1"></i></a> --}}
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table-custom">
-                                    {{-- (thead tidak berubah) --}}
-                                    <tbody>
-                                        {{-- PERUBAHAN 1: Loop data antrian RAB dari controller --}}
-                                        @forelse ($antrianRab as $pengajuan)
-                                        <tr>
-                                            <td>
-                                                <div>{{ $pengajuan->judul_kegiatan }}</div>
-                                                <small class="text-muted">{{ $pengajuan->ormawa->nama_ormawa ?? 'Individu' }}</small>
-                                            </td>
-                                            <td class="text-center">{{ \Carbon\Carbon::parse($pengajuan->tanggal_pengajuan)->diffForHumans() }}</td>
-                                            <td class="text-right">
-                                               <a href="{{ route('staf_fakultas.verifikasi.rab', $pengajuan->pengajuan_id) }}" class="action-btn">Verifikasi</a>
-                                            </td>
-                                        </tr>
-                                        @empty
-                                        <tr><td colspan="3" class="text-center">Tidak ada antrian verifikasi RAB.</td></tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-6">
-                        <div class="dashboard-card h-100">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="card-title mb-0"><i class="bi bi-folder-check me-2"></i> Antrian Verifikasi LPJ</h5>
-                                {{-- <a href="#" class="action-btn">Lihat Semua <i class="bi bi-arrow-right ms-1"></i></a> --}}
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table-custom">
-                                    {{-- (thead tidak berubah) --}}
-                                    <tbody>
-                                        {{-- PERUBAHAN 2: Loop data antrian LPJ dari controller --}}
-                                        @forelse ($antrianLpj as $pengajuan)
-                                        <tr>
-                                            <td>
-                                                <div>{{ $pengajuan->judul_kegiatan }}</div>
-                                                <small class="text-muted">{{ $pengajuan->ormawa->nama_ormawa ?? 'Individu' }}</small>
-                                            </td>
-                                            <td class="text-center">{{ \Carbon\Carbon::parse($pengajuan->lpj->tanggal_lapor)->diffForHumans() }}</td>
-                                            <td class="text-right">
-                                                <a href="#" class="action-btn">Verifikasi</a>
-                                            </td>
-                                        </tr>
-                                        @empty
-                                        <tr><td colspan="3" class="text-center">Tidak ada antrian verifikasi LPJ.</td></tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+        <div class="grid lg:grid-cols-2 gap-6">
+            <div class="card">
+                <div class="d-flex justify-between align-center mb-4">
+                    <h3 class="form-title"><span class="material-icons">description</span> Antrian Verifikasi RAB</h3>
                 </div>
+                <div class="table-container">
+                    <table class="form-table">
+                        <tbody>
+                            @forelse ($antrianRab as $pengajuan)
+                            <tr>
+                                <td>
+                                    <div>{{ $pengajuan->judul_kegiatan }}</div>
+                                    <small style="color: var(--subtext-dark);">{{ $pengajuan->ormawa->nama_ormawa ?? 'Individu' }}</small>
+                                </td>
+                                <td class="text-center">{{ \Carbon\Carbon::parse($pengajuan->tanggal_pengajuan)->diffForHumans() }}</td>
+                                <td class="text-right">
+                                   <a href="{{ route('staf_fakultas.verifikasi.rab', $pengajuan->pengajuan_id) }}" class="btn btn-outline">Verifikasi</a>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="3" class="text-center">Tidak ada antrian verifikasi RAB.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-                <div class="row mt-4 g-4">
-                    {{-- PERUBAHAN 3: Statistik dibuat dinamis --}}
-                    <div class="col-md-3">
-                        <div class="dashboard-card text-center">
-                            <i class="bi bi-clock-history futuristic-icon mb-2"></i>
-                            <h4 class="highlight-text">{{ $stats['menunggu_verifikasi'] }}</h4>
-                            <p class="mb-0 futuristic-subtitle">Total Antrian</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="dashboard-card text-center">
-                            <i class="bi bi-building futuristic-icon mb-2"></i>
-                            <h4 class="highlight-text">{{ $stats['total_ormawa'] }}</h4>
-                            <p class="mb-0 futuristic-subtitle">ORMAWA Terdaftar</p>
-                        </div>
-                    </div>
-                    {{-- Anda bisa menambahkan 2 kartu statistik lainnya di sini --}}
+            <div class="card">
+                <div class="d-flex justify-between align-center mb-4">
+                    <h3 class="form-title"><span class="material-icons">task_alt</span> Antrian Verifikasi LPJ</h3>
+                </div>
+                <div class="table-container">
+                    <table class="form-table">
+                        <tbody>
+                            @forelse ($antrianLpj as $pengajuan)
+                            <tr>
+                                <td>
+                                    <div>{{ $pengajuan->judul_kegiatan }}</div>
+                                    <small style="color: var(--subtext-dark);">{{ $pengajuan->ormawa->nama_ormawa ?? 'Individu' }}</small>
+                                </td>
+                                <td class="text-center">{{ \Carbon\Carbon::parse($pengajuan->lpj->tanggal_lapor)->diffForHumans() }}</td>
+                                <td class="text-right">
+                                    <a href="{{ route('staf_fakultas.verifikasi.lpj.show', $pengajuan->lpj->lpj_id) }}" class="btn btn-outline">Verifikasi</a>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="3" class="text-center">Tidak ada antrian verifikasi LPJ.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
+
+        <div class="grid md:grid-cols-4 gap-6 mt-6">
+            <div class="card text-center">
+                <h2 class="highlight-text" style="font-size: 2rem;">{{ $stats['menunggu_verifikasi'] }}</h2>
+                <p style="color: var(--subtext-dark);">Total Antrian</p>
+            </div>
+            <div class="card text-center">
+                <h2 class="highlight-text" style="font-size: 2rem;">{{ $stats['total_ormawa'] }}</h2>
+                <p style="color: var(--subtext-dark);">ORMAWA Terdaftar</p>
+            </div>
+            </div>
     </div>
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Fungsi untuk toggle sidebar
-        document.getElementById('toggleSidebar').addEventListener('click', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const toggleIcon = this.querySelector('i');
-            
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-            
-            if (sidebar.classList.contains('collapsed')) {
-                toggleIcon.classList.remove('bi-chevron-left');
-                toggleIcon.classList.add('bi-chevron-right');
-            } else {
-                toggleIcon.classList.remove('bi-chevron-right');
-                toggleIcon.classList.add('bi-chevron-left');
-            }
-        });
-
-        // Update active state di sidebar berdasarkan halaman saat ini
-        document.addEventListener('DOMContentLoaded', function() {
-            const currentPath = window.location.pathname;
-            const navLinks = document.querySelectorAll('.nav-link');
-            
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
-            });
-            
-            // Default active untuk dashboard jika di root
-            if (currentPath === '/' || currentPath === '') {
-                document.querySelector('.nav-link[href="{{ route('staf_fakultas.dashboard') }}"]').classList.add('active');
-            }
-        });
-    </script>
 </body>
 </html>

@@ -1,98 +1,226 @@
 <?php
+
 namespace App\Http\Controllers\Mahasiswa;
+
 use App\Http\Controllers\Controller;
+use App\Models\Pengajuan;
 use App\Models\Lpj;
 use App\Models\ItemLpj;
-use App\Models\Pengajuan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
+
+
 class LpjController extends Controller
 {
-    /**
-     * Menampilkan halaman untuk memilih pengajuan yang akan dibuatkan LPJ.
-     */
-    public function index()
-    {
-        // Ambil semua pengajuan milik user yang sudah disetujui (misal status 'Dana Cair')
-        // dan belum memiliki LPJ.
-        $pengajuans = Pengajuan::where('user_id', Auth::id())
-            ->whereHas('status', function ($query) {
-                $query->where('nama_status', 'Dana Cair'); // Sesuaikan dengan nama status Anda
-            })
-            ->whereDoesntHave('lpj') // Hanya yang belum punya LPJ
-            ->orderBy('tanggal_pengajuan', 'desc')
-            ->get();
-        return view('mahasiswa.lpj.index', compact('pengajuans'));
+public function update(Request $request, Lpj $lpj)
+{
+    if ($lpj->pengajuan->user_id !== Auth::id()) {
+        abort(403, 'Anda tidak berhak mengubah LPJ ini.');
     }
-    /**
-     * Menampilkan form untuk membuat LPJ berdasarkan pengajuan yang dipilih.
-     */
-    public function create(Pengajuan $pengajuan)
-    {
-        // Proteksi: Pastikan user hanya bisa membuat LPJ untuk pengajuannya sendiri
-        if ($pengajuan->user_id !== Auth::id()) {
-            abort(403);
-        }
-        return view('mahasiswa.lpj.create', compact('pengajuan'));
+
+    if (! in_array($lpj->status_lpj, ['Perlu Revisi (Ormawa)', 'Perlu Revisi'])) {
+        return redirect()->route('mahasiswa.lpj.index')
+            ->with('info', 'LPJ ini tidak dalam status revisi.');
     }
-    /**
-     * Menyimpan data LPJ baru ke database.
-     */
-    public function store(Request $request, Pengajuan $pengajuan)
-    {
-        // Proteksi: Pastikan user hanya bisa menyimpan LPJ untuk pengajuannya sendiri
-        if ($pengajuan->user_id !== Auth::id()) {
-            abort(403);
+
+    $validated = $request->validate([
+        'items'                     => ['required','array','min:1'],
+        'items.*.nama_item'         => ['required','string','max:255'],
+        'items.*.jumlah'            => ['required','integer','min:1'],
+        'items.*.satuan'            => ['required','string','max:50'],
+        'items.*.harga_satuan'      => ['required','numeric','min:0'],
+        'items.*.nota'              => ['nullable','file','mimes:jpeg,png,jpg,gif,pdf','max:5120'],
+        'items.*.existing_path'     => ['nullable','string'],
+        'link_gdocs'                => ['nullable', 'url', 'max:2048']
+    ]);
+
+    $totalRealisasi = 0;
+    foreach ($validated['items'] as $it) {
+        $totalRealisasi += (int)$it['jumlah'] * (float)$it['harga_satuan'];
+    }
+    if ($totalRealisasi > (float) $lpj->pengajuan->total_rab) {
+        return back()->withErrors([
+            'total_realisasi' => 'Total realisasi tidak boleh melebihi total RAB yang disetujui.'
+        ])->withInput();
+    }
+
+    DB::transaction(function () use ($request, $lpj, $validated, $totalRealisasi) {
+        $lpj->items()->delete();
+
+        $rows = [];
+        foreach ($validated['items'] as $idx => $it) {
+            $notaPath = $it['existing_path'] ?? null;
+
+            if ($request->hasFile("items.$idx.nota")) {
+                $stored   = $request->file("items.$idx.nota")->store('nota_lpj', 'public');
+                $notaPath = $stored;
+            }
+
+            $rows[] = [
+                'lpj_id'           => $lpj->lpj_id,
+                'nama_pengeluaran' => $it['nama_item'],
+                'jumlah_realisasi' => (int)$it['jumlah'],
+                'satuan'           => $it['satuan'],
+                'harga_realisasi'  => (float)$it['harga_satuan'],
+                'path_foto_nota'   => $notaPath,
+            ];
         }
-        // 1. Validasi
-        $request->validate([
-            'items' => 'required|array|min:1',
-            'items.*.nama_item' => 'required|string|max:255',
-            'items.*.jumlah' => 'required|integer|min:1',
-            'items.*.satuan' => 'required|string|max:50',
-            'items.*.harga_satuan' => 'required|integer|min:0',
-            'items.*.nota' => 'required|image|mimes:jpeg,png,jpg|max:2048', // Validasi file nota
+        $lpj->items()->createMany($rows);
+
+        $lpj->update([
+            'total_realisasi' => $totalRealisasi,
+            'status_lpj'      => 'Menunggu Screening Ormawa',
+            'tanggal_lapor'   => now(),
+            'link_gdocs'      => $request->input('link_gdocs'),
         ]);
-        // 2. Hitung total realisasi & validasi
-        $totalRealisasi = 0;
-        foreach ($request->items as $item) {
-            $totalRealisasi += $item['jumlah'] * $item['harga_satuan'];
+    });
+
+    return redirect()
+        ->route('mahasiswa.lpj.index')
+        ->with('success', 'LPJ berhasil diperbarui & dikirim ulang untuk screening.');
+}
+
+    public function updateLpjStatus(Request $request, Lpj $lpj)
+    {
+        $validator = Validator::make($request->all(), [
+            'action' => 'required|in:setuju,revisi',
+            'komentar' => 'nullable|string|max:1000',
+            'link_gdocs' => 'nullable|url|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
         }
-        if ($totalRealisasi > $pengajuan->total_rab) {
-            return back()->withErrors(['total' => 'Total realisasi tidak boleh melebihi total RAB yang disetujui.']);
+
+        $action = $request->input('action');
+        $komentar = $request->input('komentar');
+
+        if ($action === 'setuju') {
+            $lpj->status_lpj = 'Disetujui';
+            $pesan = 'LPJ telah berhasil disetujui.';
+        } else {
+            if (empty($komentar)) {
+                return back()->withErrors(['komentar' => 'Komentar wajib diisi untuk meminta revisi.'])->withInput();
+            }
+            $lpj->status_lpj = 'Perlu Revisi';
+            $lpj->komentar = $komentar;
+            $pesan = 'LPJ telah dikembalikan untuk revisi.';
         }
         
-        DB::beginTransaction();
-        try {
-            // 3. Simpan data ke tabel 'lpj'
-            $lpj = new Lpj();
-            $lpj->pengajuan_id = $pengajuan->pengajuan_id;
-            $lpj->tanggal_lapor = now();
-            $lpj->total_realisasi = $totalRealisasi;
-            $lpj->status_lpj = 'Menunggu Verifikasi'; // Status awal LPJ
-            $lpj->save();
-            // 4. Simpan setiap item dan upload notanya
-            foreach ($request->file('items') as $index => $fileData) {
-                $itemData = $request->input('items')[$index];
-                // Upload file nota ke storage
-                $path = $fileData['nota']->store('public/nota_lpj');
-                // Simpan data ke tabel 'item_lpj'
-                $itemLpj = new ItemLpj();
-                $itemLpj->lpj_id = $lpj->lpj_id;
-                $itemLpj->nama_pengeluaran = $itemData['nama_item'];
-                $itemLpj->jumlah_realisasi = $itemData['jumlah'];
-                $itemLpj->satuan = $itemData['satuan'];
-                $itemLpj->harga_realisasi = $itemData['harga_satuan'];
-                $itemLpj->path_foto_nota = $path;
-                $itemLpj->save();
-            }
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Gagal menyimpan LPJ: ' . $e->getMessage());
+        $lpj->save();
+
+        $namaStatusHistori = ($action === 'setuju') ? 'LPJ Disetujui' : 'LPJ Revisi';
+        $statusUntukHistori = \App\Models\Status::where('nama_status', $namaStatusHistori)->first();
+
+        if ($statusUntukHistori) {
+            \App\Models\HistoriStatus::create([
+                'pengajuan_id' => $lpj->pengajuan_id,
+                'status_id' => $statusUntukHistori->status_id,
+                'diubah_oleh_user_id' => \Illuminate\Support\Facades\Auth::id(),
+                'komentar' => $komentar,
+            ]);
         }
-        // 5. Arahkan kembali ke halaman riwayat pengajuan
-        return redirect()->route('mahasiswa.pengajuan.index')->with('success', 'LPJ berhasil dikumpulkan dan sedang menunggu verifikasi.');
+
+        return redirect()->route('staf_fakultas.dashboard')->with('success', $pesan);
     }
+    public function index()
+    {
+        $user_id = Auth::id();
+
+        $siapDibuat = Pengajuan::where('user_id', $user_id)
+            ->whereHas('status', function ($query) {
+                $query->whereIn('nama_status', ['Disetujui', 'Dana Cair']);
+            })
+            ->whereDoesntHave('lpj')
+            ->orderBy('tanggal_pengajuan', 'desc')
+            ->get();
+
+        $perluDirevisi = Lpj::whereHas('pengajuan', function ($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            })
+            ->whereIn('status_lpj', ['Perlu Revisi (Ormawa)', 'Perlu Revisi'])
+            ->with('pengajuan')
+            ->get();
+            
+        return view('mahasiswa.lpj.index', compact('siapDibuat', 'perluDirevisi'));
+    }
+    public function create(Pengajuan $pengajuan)
+    {
+        // Pastikan user yang mengakses adalah pemilik pengajuan
+        if ($pengajuan->user_id !== Auth::id()) {
+            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+        }
+        if ($pengajuan->lpj) {
+            return redirect()->route('mahasiswa.lpj.index')
+                         ->with('warning', 'LPJ untuk kegiatan ini sudah pernah dibuat.');
+    }
+        
+        return view('mahasiswa.lpj.create', compact('pengajuan'));
+    }
+    public function edit($id)
+    {
+        $lpj = Lpj::with(['pengajuan', 'items'])->findOrFail($id);
+        if ($lpj->pengajuan->user_id !== Auth::id()) {
+            abort(403, 'Anda tidak berhak mengubah LPJ ini.');
+        }
+        return view('mahasiswa.lpj.edit', compact('lpj'));
+    }
+
+    public function store(Request $request, Pengajuan $pengajuan)
+{
+    $validator = Validator::make($request->all(), [
+        'items' => 'required|array|min:1',
+        'items.*.nama_item' => 'required|string|max:255',
+        'items.*.jumlah' => 'required|integer|min:1',
+        'items.*.satuan' => 'required|string|max:50',
+        'items.*.harga_satuan' => 'required|numeric|min:0',
+        'items.*.nota' => 'required|file|mimes:jpeg,png,jpg,gif,pdf|max:5120',
+    ]);
+    if ($validator->fails()) {
+        return back()->withErrors($validator)->withInput();
+    }
+
+    $totalRealisasi = 0;
+    foreach ($request->items as $item) {
+        $totalRealisasi += $item['jumlah'] * $item['harga_satuan'];
+    }
+    if ($totalRealisasi > $pengajuan->total_rab) {
+        return back()->withErrors(['total_realisasi' => 'Total realisasi tidak boleh melebihi total RAB yang disetujui.'])->withInput();
+    }
+
+    DB::beginTransaction();
+    try {
+        $lpj = Lpj::create([
+            'pengajuan_id'     => $pengajuan->pengajuan_id,
+            'total_realisasi'  => $totalRealisasi,
+            'status_lpj'       => 'Menunggu Screening Ormawa',
+            'tanggal_lapor'    => now(),
+            'link_gdocs'      => $request->input('link_gdocs'),
+        ]);
+
+        foreach ($request->items as $index => $itemData) {
+            $notaFile = $request->file("items.$index.nota");
+            $stored    = $notaFile->store('nota_lpj', 'public');
+            ItemLpj::create([
+                'lpj_id'            => $lpj->lpj_id,
+                'nama_pengeluaran'  => $itemData['nama_item'],
+                'jumlah_realisasi'  => (int)$itemData['jumlah'],
+                'satuan'            => $itemData['satuan'],
+                'harga_realisasi'   => (float)$itemData['harga_satuan'],
+                'path_foto_nota'    => $stored,
+            ]);
+        }
+
+        DB::commit();
+        return redirect()->route('mahasiswa.lpj.index')
+            ->with('success', 'LPJ berhasil dikumpulkan dan sedang menunggu verifikasi.');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->withErrors(['database' => 'Gagal menyimpan data. Error: '.$e->getMessage()])->withInput();
+    }
+}
+
 }

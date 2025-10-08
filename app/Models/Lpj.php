@@ -9,34 +9,26 @@ class Lpj extends Model
 {
     use HasFactory;
 
-    /**
-     * Nama tabel yang terhubung dengan model ini.
-     *
-     * @var string
-     */
-    protected $table = 'lpj'; // <-- INI SOLUSINYA
-
-    /**
-     * Kunci utama untuk model.
-     *
-     * @var string
-     */
+    protected $table = 'lpj';
     protected $primaryKey = 'lpj_id';
 
-    /**
-     * Atribut yang dapat diisi secara massal.
-     *
-     * @var array
-     */
     protected $fillable = [
         'pengajuan_id',
         'tanggal_lapor',
         'total_realisasi',
         'status_lpj',
+        'komentar',
+        'link_gdocs',
+    ];
+
+    protected $casts = [
+        'pengajuan_id'    => 'integer',
+        'total_realisasi' => 'decimal:2',
+        'tanggal_lapor'   => 'datetime',
     ];
 
     /**
-     * Mendapatkan pengajuan yang memiliki LPJ ini.
+     * LPJ milik pengajuan tertentu.
      */
     public function pengajuan()
     {
@@ -44,9 +36,14 @@ class Lpj extends Model
     }
 
     /**
-     * Mendapatkan semua item rincian untuk LPJ ini.
+     * Item-item (nota) LPJ.
      */
     public function itemsLpj()
+    {
+    return $this->hasMany(ItemLpj::class, 'lpj_id', 'lpj_id');
+    }
+
+    public function items()
     {
         return $this->hasMany(ItemLpj::class, 'lpj_id', 'lpj_id');
     }
