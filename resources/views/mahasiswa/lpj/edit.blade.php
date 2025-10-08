@@ -108,23 +108,26 @@
     @endif
 
     {{-- FORM EDIT LPJ --}}
-    <div
-        class="card"
-        x-data="lpjEdit({
-            totalRab: {{ (float) $lpj->pengajuan->total_rab }},
-            initialRows: @json(
-                $lpj->items->map(function($it){
-                    return [
-                        'nama_item'    => $it->nama_pengeluaran,
-                        'jumlah'       => (int) $it->jumlah_realisasi,
-                        'satuan'       => $it->satuan,
-                        'harga_satuan' => (float) $it->harga_realisasi,
-                        'nota_url'     => $it->path_foto_nota ? asset('storage/'.$it->path_foto_nota) : null,
-                    ];
-                })->values()
-            )
-        })"
-    >
+            @php
+            $initialRows = $lpj->items->map(function($it){
+                return [
+                    "nama_item"    => $it->nama_pengeluaran,
+                    "jumlah"       => (int) $it->jumlah_realisasi,
+                    "satuan"       => $it->satuan,
+                    "harga_satuan" => (float) $it->harga_realisasi,
+                    "nota_url"     => $it->path_foto_nota ? asset("storage/".$it->path_foto_nota) : null,
+                ];
+            })->values();
+            @endphp
+
+            <div
+                class="card"
+                x-data='lpjEdit({
+                    totalRab: {{ (float) $lpj->pengajuan->total_rab }},
+                    initialRows: @json($initialRows)
+                })'
+            >
+
         <div class="form-title">Rincian Realisasi</div>
         <p class="muted mb-4">Untuk mengganti nota, unggah file baru pada baris terkait (Gambar/PDF, maksimal 5MB). Link GDocs opsional.</p>
 
@@ -137,7 +140,7 @@
 
             {{-- Link GDocs (global, satu kali) --}}
             <div class="mb-4">
-                <label for="link_gdocs" class="font-semibold" style="display:block;margin-bottom:6px">Link GDocs (opsional)</label>
+                <label for="link_gdocs" class="font-semibold" style="display:block;margin-bottom:6px">Link GDocs</label>
                 <input type="url"
                        id="link_gdocs"
                        name="link_gdocs"
