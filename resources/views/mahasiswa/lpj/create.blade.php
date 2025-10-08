@@ -56,7 +56,7 @@
         .text-right{text-align:right}
 
         /* Inputs */
-        input[type="text"],input[type="number"],textarea{
+        input[type="text"],input[type="number"],input[type="url"],textarea{
             width:100%;background:#111827;border:1px solid #374151;color:#E5E7EB;
             border-radius:10px;padding:10px 12px;outline:none
         }
@@ -136,13 +136,25 @@
         x-data="lpjCreate({ totalRab: {{ (float) $pengajuan->total_rab }} })"
     >
         <div class="form-title">Rincian Realisasi</div>
-        <p class="muted mb-4">Unggah nota untuk setiap pengeluaran (Gambar/PDF, maksimal 5MB).</p>
+        <p class="muted mb-4">Unggah nota untuk setiap pengeluaran (Gambar/PDF, maksimal 5MB). Link GDocs opsional (satu untuk seluruh LPJ).</p>
 
         <form method="POST"
               action="{{ route('mahasiswa.lpj.store', $pengajuan->pengajuan_id) }}"
               enctype="multipart/form-data"
               x-on:submit="return beforeSubmit()">
             @csrf
+
+            {{-- Link GDocs global (opsional) --}}
+            <div class="mb-4">
+                <label for="link_gdocs" class="font-semibold">Link Google Docs</label>
+                <input type="url"
+                       id="link_gdocs"
+                       name="link_gdocs"
+                       value="{{ old('link_gdocs') }}"
+                       placeholder="https://docs.google.com/..."
+                       pattern="https?://.*">
+                <p class="muted" style="margin-top:6px">Satu link untuk keseluruhan LPJ. Pastikan aksesnya terbuka (viewer).</p>
+            </div>
 
             <div class="table-container">
                 <table class="form-table">
@@ -197,7 +209,7 @@
                                     <div class="muted" style="font-size:.8rem;margin-top:6px" x-text="formatRupiah(row.jumlah * row.harga_satuan)"></div>
                                 </td>
 
-                                {{-- Nota --}}
+                                {{-- Nota (file) --}}
                                 <td class="text-center">
                                     <input type="file"
                                            :name="`items[${i}][nota]`"
@@ -273,8 +285,6 @@ function lpjCreate({ totalRab }) {
             return 'Rp ' + n.toLocaleString('id-ID', { maximumFractionDigits: 0 });
         },
         beforeSubmit() {
-            // Biarkan server juga memvalidasi. Jika mau cegah submit saat over, uncomment baris di bawah.
-            // if (this.grandTotal() > this.totalRab) return confirm('Total melebihi RAB. Tetap kirim?');
             return true;
         }
     }

@@ -18,6 +18,7 @@ class Lpj extends Model
         'total_realisasi',
         'status_lpj',
         'komentar',
+        'link_gdocs',
     ];
 
     protected $casts = [

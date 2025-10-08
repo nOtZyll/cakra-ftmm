@@ -31,16 +31,19 @@
         .stat-card .number { font-size: 1.8rem; font-weight: 700; background: linear-gradient(90deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .table-container { overflow-x: auto; }
         .table { width: 100%; border-collapse: collapse; }
-        .table th { padding: 15px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid rgba(116, 24, 71, 0.5); }
-        .table td { padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .table th { padding: 15px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid rgba(116, 24, 71, 0.5); white-space: nowrap; }
+        .table td { padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); vertical-align: middle; }
         .status { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; text-align: center; display: inline-block; }
         .status.menunggu { background: rgba(255, 193, 7, 0.2); color: var(--status-menunggu); }
         .status.disetujui { background: rgba(40, 167, 69, 0.2); color: var(--status-disetujui); }
         .status.revisi { background: rgba(220, 53, 69, 0.2); color: var(--status-revisi); }
         .status.default { background: rgba(108, 117, 125, 0.2); color: var(--status-default); }
-        .btn { display: inline-flex; align-items: center; padding: 8px 15px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; text-decoration: none; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 15px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; text-decoration: none; }
         .btn-primary { background: var(--primary); color: white; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+        /* Tombol link GDocs */
+        .btn-gdocs { background: rgba(7,55,99,.2); color: #9ADCFF; border: 1px solid rgba(116,24,71,.25); }
+        .btn-gdocs .material-icons { font-size: 18px; }
     </style>
 </head>
 <body>
@@ -70,9 +73,7 @@
             <div class="user-info">
                 <div class="avatar"><span class="material-icons">person</span></div>
                 <div>
-                    {{-- Menampilkan nama user yang login --}}
                     <h2 style="font-size: 1.3rem; font-weight: 600;">{{ Auth::user()->name }}</h2>
-                    {{-- Menampilkan nama ormawa dari user yang login --}}
                     <p style="color: var(--subtext-dark); font-size: 0.9rem;">
                         {{ Auth::user()->ormawa->nama_ormawa ?? 'Staff Ormawa' }}
                     </p>
@@ -83,17 +84,14 @@
         <div class="stats">
             <div class="glass-card stat-card">
                 <h3>Total Pengajuan</h3>
-                {{-- Menghitung jumlah semua item di variabel $daftarPengajuan --}}
                 <div class="number">{{ $daftarPengajuan->count() }}</div>
             </div>
             <div class="glass-card stat-card">
                 <h3>Menunggu Screening</h3>
-                {{-- Menghitung hanya pengajuan dengan status tertentu --}}
                 <div class="number">{{ $daftarPengajuan->where('status.nama_status', 'Screening Ormawa')->count() }}</div>
             </div>
             <div class="glass-card stat-card">
                 <h3>Disetujui</h3>
-                 {{-- Menghitung hanya pengajuan dengan status tertentu --}}
                 <div class="number">{{ $daftarPengajuan->where('status.nama_status', 'Disetujui')->count() }}</div>
             </div>
         </div>
@@ -112,15 +110,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{-- Memulai perulangan data --}}
                         @forelse ($daftarPengajuan as $pengajuan)
                         <tr>
-                            {{-- Menampilkan data dari setiap kolom pengajuan --}}
                             <td>{{ $pengajuan->judul_kegiatan }}</td>
                             <td>{{ $pengajuan->user->name ?? 'N/A' }}</td>
                             <td>{{ \Carbon\Carbon::parse($pengajuan->tanggal_pengajuan)->format('d M Y') }}</td>
                             <td>
-                                {{-- Logika untuk memberikan warna status yang berbeda --}}
                                 @php
                                     $statusClass = 'default';
                                     $namaStatus = strtolower($pengajuan->status->nama_status ?? '');
@@ -131,12 +126,10 @@
                                 <span class="status {{ $statusClass }}">{{ $pengajuan->status->nama_status ?? 'Tanpa Status' }}</span>
                             </td>
                             <td>
-                                {{-- Membuat link dinamis ke halaman detail screening --}}
                                 <a href="{{ route('staf_ormawa.screening.show', $pengajuan->pengajuan_id) }}" class="btn btn-primary">Screening</a>
                             </td>
                         </tr>
                         @empty
-                        {{-- Ini akan ditampilkan jika $daftarPengajuan kosong --}}
                         <tr>
                             <td colspan="5" style="text-align: center; padding: 20px;">Belum ada data pengajuan untuk ormawa Anda.</td>
                         </tr>
@@ -145,7 +138,8 @@
                 </table>
             </div>
         </div>
-                <div class="glass-card" style="margin-top: 30px;">
+
+        <div class="glass-card" style="margin-top: 30px;">
             <h2 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 20px;">Antrian Screening LPJ</h2>
             <div class="table-container">
                 <table class="table">
@@ -155,6 +149,7 @@
                             <th>PENGAJU</th>
                             <th>TANGGAL LAPOR LPJ</th>
                             <th>STATUS</th>
+                            <th>GDocs</th>  <!-- kolom baru -->
                             <th>AKSI</th>
                         </tr>
                     </thead>
@@ -164,21 +159,35 @@
                             <td>{{ $lpj->pengajuan->judul_kegiatan }}</td>
                             <td>{{ $lpj->pengajuan->user->name ?? 'N/A' }}</td>
                             <td>{{ \Carbon\Carbon::parse($lpj->tanggal_lapor)->format('d M Y') }}</td>
+                            <td><span class="status menunggu">{{ $lpj->status_lpj }}</span></td>
+
+                            <!-- Link GDocs -->
                             <td>
-                                <span class="status menunggu">{{ $lpj->status_lpj }}</span>
+                                @if(!empty($lpj->link_gdocs))
+                                    <a href="{{ $lpj->link_gdocs }}"
+                                       target="_blank" rel="noopener"
+                                       class="btn btn-gdocs">
+                                        <span class="material-icons">description</span>
+                                        Buka
+                                    </a>
+                                @else
+                                    <span class="status default">—</span>
+                                @endif
                             </td>
+
                             <td>
                                 <a href="{{ route('staf_ormawa.screening.lpj.show', $lpj->lpj_id) }}" class="btn btn-primary">Screening LPJ</a>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" style="text-align: center; padding: 20px;">Belum ada LPJ yang perlu di-screening.</td>
+                            <td colspan="6" style="text-align: center; padding: 20px;">Belum ada LPJ yang perlu di-screening.</td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+        </div>
     </div>
 </body>
 </html>
