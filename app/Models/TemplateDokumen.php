@@ -17,7 +17,8 @@ class TemplateDokumen extends Model
         'link_template',
     ];
 
-    public function jenisSurat() {
+    public function jenisSurat()
+    {
         return $this->belongsTo(JenisSurat::class, 'jenis_surat_id', 'jenis_surat_id');
     }
 }

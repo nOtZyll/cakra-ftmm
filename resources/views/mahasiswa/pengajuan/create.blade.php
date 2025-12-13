@@ -131,38 +131,44 @@
         }
         
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(116, 24, 71, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(116, 24, 71, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(116, 24, 71, 0); }
+            0% {
+                box-shadow: 0 0 0 0 rgba(116, 24, 71, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(116, 24, 71, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(116, 24, 71, 0);
+            }
         }
         
         @keyframes rotate-glow {
-            0% { 
-                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7), 
+            0% {
+                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7),
                            0 0 20px rgba(116, 24, 71, 0.5),
                            0 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(0deg);
             }
-            25% { 
-                box-shadow: 10px 0 10px rgba(116, 24, 71, 0.7), 
+            25% {
+                box-shadow: 10px 0 10px rgba(116, 24, 71, 0.7),
                            20px 0 20px rgba(116, 24, 71, 0.5),
                            30px 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(90deg);
             }
-            50% { 
-                box-shadow: 0 10px 10px rgba(116, 24, 71, 0.7), 
+            50% {
+                box-shadow: 0 10px 10px rgba(116, 24, 71, 0.7),
                            0 20px 20px rgba(116, 24, 71, 0.5),
                            0 30px 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(180deg);
             }
-            75% { 
-                box-shadow: -10px 0 10px rgba(116, 24, 71, 0.7), 
+            75% {
+                box-shadow: -10px 0 10px rgba(116, 24, 71, 0.7),
                            -20px 0 20px rgba(116, 24, 71, 0.5),
                            -30px 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(270deg);
             }
-            100% { 
-                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7), 
+            100% {
+                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7),
                            0 0 20px rgba(116, 24, 71, 0.5),
                            0 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(360deg);
@@ -179,7 +185,6 @@
             font-size: 0.9rem;
         }
         
-        /* Glassmorphism Cards */
         .card {
             background: rgba(7, 55, 99, 0.1);
             backdrop-filter: blur(10px);
@@ -198,7 +203,6 @@
             background: rgba(7, 55, 99, 0.15);
         }
         
-        /* Animasi fade in */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -209,7 +213,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Form Styles */
         .form-container {
             max-width: 800px;
             margin: 0 auto;
@@ -282,7 +285,6 @@
             margin-right: 5px;
         }
         
-        /* Table Styles */
         .table-container {
             overflow-x: auto;
             margin-bottom: 20px;
@@ -336,7 +338,6 @@
             border-radius: 0 0 8px 8px;
         }
         
-        /* Button Styles */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -395,7 +396,6 @@
             font-size: 18px;
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 width: 70px;
@@ -456,12 +456,10 @@
             }
         }
         
-        /* Menu toggle untuk mobile */
         .menu-toggle {
             display: none;
         }
         
-        /* Feedback animasi saat mengklik */
         .click-feedback {
             animation: clickEffect 0.3s ease;
         }
@@ -519,7 +517,6 @@
             <h1 class="form-title">Buat Pengajuan Baru</h1>
             <p class="form-subtitle">Ajukan proposal kegiatan atau reimbursement untuk organisasi Anda</p>
 
-            {{-- Menampilkan pesan error validasi jika ada --}}
             @if ($errors->any())
                 <div class="card bg-red-500/20 text-red-400 mb-4 p-4">
                     <p class="font-bold mb-2">Terjadi kesalahan:</p>
@@ -531,7 +528,6 @@
                 </div>
             @endif
 
-            {{-- TAMBAHKAN BLOK INI untuk menampilkan pesan error dari controller --}}
             @if (session('error'))
                 <div class="card bg-red-500/20 text-red-400 mb-4 p-4">
                     <p class="font-bold">Terjadi Kesalahan:</p>
@@ -539,17 +535,21 @@
                 </div>
             @endif
 
-            {{-- PERUBAHAN 1: Tag form dihubungkan ke backend --}}
             <form method="POST" action="{{ route('mahasiswa.pengajuan.store') }}" class="space-y-6 card">
                 @csrf
-                <!-- Step 1: ORMAWA + Jenis Surat -->
                 <div class="form-group">
                     <label class="form-label" for="ormawa_id">Pilih ORMAWA</label>
-                    {{-- PERUBAHAN 2: Dropdown diisi dari controller --}}
-                    <select class="form-select" name="ormawa_id" id="ormawa_id" required>
-                        <option value="">-- Pilih ORMAWA --</option>
+                    <select class="form-select" name="ormawa_id" id="ormawa_id" required 
+                        style="background-color: rgba(7, 55, 99, 0.15); color: #E0E6F1; border: 1px solid rgba(116, 24, 71, 0.3);">
+                        
+                        <option value="" disabled selected hidden style="background-color: #0A192F; color: #94A3B8;">
+                            -- Pilih ORMAWA --
+                        </option>
                         @foreach ($ormawas as $ormawa)
-                            <option value="{{ $ormawa->ormawa_id }}" {{ old('ormawa_id') == $ormawa->ormawa_id ? 'selected' : '' }}>
+                            <option value="{{ $ormawa->ormawa_id }}" 
+                                {{ old('ormawa_id') == $ormawa->ormawa_id ? 'selected' : '' }}
+                                style="background-color: #0A192F; color: #E0E6F1;">
+                                
                                 {{ $ormawa->nama_ormawa }}
                             </option>
                         @endforeach
@@ -558,10 +558,17 @@
 
                 <div class="form-group">
                     <label class="form-label" for="jenis_surat_id">Jenis Surat</label>
-                    <select class="form-select" name="jenis_surat_id" id="jenis_surat_id" required>
-                        <option value="">-- Pilih Jenis Surat --</option>
+                    <select class="form-select" name="jenis_surat_id" id="jenis_surat_id" required
+                        style="background-color: rgba(7, 55, 99, 0.15); color: #E0E6F1; border: 1px solid rgba(116, 24, 71, 0.3);">
+                        
+                        <option value="" disabled selected hidden style="background-color: #0A192F; color: #94A3B8;">
+                            -- Pilih Jenis Surat --
+                        </option>
                         @foreach ($jenisSurats as $jenis)
-                            <option value="{{ $jenis->jenis_surat_id }}" {{ old('jenis_surat_id') == $jenis->jenis_surat_id ? 'selected' : '' }}>
+                            <option value="{{ $jenis->jenis_surat_id }}" 
+                                {{ old('jenis_surat_id') == $jenis->jenis_surat_id ? 'selected' : '' }}
+                                style="background-color: #0A192F; color: #E0E6F1;">
+                                
                                 {{ $jenis->nama_jenis }}
                             </option>
                         @endforeach

@@ -54,7 +54,7 @@
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
-    .navbar .nav-link { 
+    .navbar .nav-link {
       color: var(--subtext-dark);
       font-weight: 500;
       margin: 0 10px;
@@ -62,7 +62,7 @@
       position: relative;
     }
 
-    .navbar .nav-link:hover { 
+    .navbar .nav-link:hover {
       color: var(--text-dark);
     }
 
@@ -81,9 +81,9 @@
       width: 100%;
     }
 
-    .brand-wrap { 
-      display: flex; 
-      align-items: center; 
+    .brand-wrap {
+      display: flex;
+      align-items: center;
       gap: 12px;
       text-decoration: none;
     }
@@ -98,13 +98,13 @@
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
-    .brand-text { 
-      display: flex; 
-      flex-direction: column; 
+    .brand-text {
+      display: flex;
+      flex-direction: column;
       line-height: 1.2;
     }
 
-    .brand-text .title { 
+    .brand-text .title {
       font-weight: 700;
       font-size: 1.4rem;
       font-family: 'Orbitron', sans-serif;
@@ -115,8 +115,8 @@
       animation: colorSweep 3s ease-in-out infinite;
     }
 
-    .brand-text .subtitle { 
-      font-size: 0.75rem; 
+    .brand-text .subtitle {
+      font-size: 0.75rem;
       color: var(--subtext-dark);
       font-weight: 400;
     }
@@ -157,7 +157,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-image: 
+      background-image:
         linear-gradient(rgba(116, 24, 71, 0.1) 1px, transparent 1px),
         linear-gradient(90deg, rgba(116, 24, 71, 0.1) 1px, transparent 1px);
       background-size: 50px 50px;
@@ -210,7 +210,7 @@
       animation: colorSweepFast 4s ease-in-out infinite;
       position: relative;
       letter-spacing: 3px;
-      text-shadow: 
+      text-shadow:
         0 0 10px rgba(124, 162, 197, 0.5),
         0 0 20px rgba(116, 24, 71, 0.3);
       text-transform: uppercase;
@@ -600,7 +600,7 @@
         <div class="info-card" data-aos="fade-right">
           <h4 class="fw-bold text-center mb-4">Apa itu CAKRA?</h4>
           <p class="text-center">
-            CAKRA (Central Administrasi Keuangan dan Rencana Anggaran) adalah sistem informasi yang dirancang 
+            CAKRA (Central Administrasi Keuangan dan Rencana Anggaran) adalah sistem informasi yang dirancang
             untuk mengelola alur pengajuan dana organisasi mahasiswa secara digital.
           </p>
         </div>

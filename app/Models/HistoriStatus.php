@@ -11,7 +11,6 @@ class HistoriStatus extends Model
     use HasFactory;
     protected $table = 'histori_status';
     protected $primaryKey = 'histori_id';
-
     protected $fillable = [
         'pengajuan_id',
         'status_id',
@@ -20,15 +19,23 @@ class HistoriStatus extends Model
         'komentar',
     ];
 
-    public function pengajuan() {
+    public function pengajuan()
+    {
         return $this->belongsTo(Pengajuan::class, 'pengajuan_id', 'pengajuan_id');
     }
 
-    public function status() {
+    public function status()
+    {
         return $this->belongsTo(Status::class, 'status_id', 'status_id');
     }
 
-    public function diubahOleh() {
+    public function diubahOleh()
+    {
+        return $this->belongsTo(User::class, 'diubah_oleh_user_id', 'user_id');
+    }
+    
+    public function user()
+    {
         return $this->belongsTo(User::class, 'diubah_oleh_user_id', 'user_id');
     }
 }

@@ -8,9 +8,6 @@ use Illuminate\Database\Seeder;
 
 class OrmawaSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         Ormawa::create(['nama_ormawa' => 'HIMATESDA (Himpunan Mahasiswa Teknologi Sains Data)']);

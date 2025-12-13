@@ -17,11 +17,11 @@
             'navy-base': '#073763',
             'navy-light': '#0A192F',
             'text-dark': '#e2e8f0',
-            'subtle-text-dark': '#ffffff', // Putih solid untuk label & placeholder
+            'subtle-text-dark': '#ffffff',
             'card-bg': 'rgba(255, 255, 255, 0.05)',
-            'dropdown-bg': '#1e293b', // Background dropdown
-            'dropdown-text': '#ffffff', // Teks dropdown
-            'dropdown-hover': '#334155', // Hover state
+            'dropdown-bg': '#1e293b',
+            'dropdown-text': '#ffffff',
+            'dropdown-hover': '#334155',
           },
           fontFamily: {
             display: ["Poppins", "sans-serif"],
@@ -105,10 +105,12 @@
 
         <!-- Checkbox + Register -->
         <div class="flex items-center justify-between text-sm">
-          <label class="flex items-center text-subtle-text-dark">
-            <input type="checkbox" name="remember" class="mr-2 rounded border-gray-600 text-primary bg-gray-700 focus:ring-primary"> Ingat saya
-          </label>
-          <a href="{{ route('register') }}" class="text-white hover:text-primary/80">Daftar</a>
+            <label class="flex items-center text-subtle-text-dark">
+                <input type="checkbox" name="remember" class="mr-2 rounded border-gray-600 text-primary bg-gray-700 focus:ring-primary"> Ingat saya
+            </label>
+            
+            <a href="{{ route('password.request') }}" class="text-gray-400 hover:text-white mx-2">Lupa Password?</a>
+            <a href="{{ route('register') }}" class="text-white hover:text-primary/80">Daftar</a>
         </div>
 
         <!-- Tombol Login -->

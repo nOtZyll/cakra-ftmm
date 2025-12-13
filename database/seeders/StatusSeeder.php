@@ -8,9 +8,6 @@ use Illuminate\Database\Seeder;
 
 class StatusSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         Status::create(['nama_status' => 'Draft', 'deskripsi' => 'Pengajuan masih dalam bentuk draft oleh mahasiswa.']);

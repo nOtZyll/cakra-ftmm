@@ -30,8 +30,7 @@
             background-image: radial-gradient(circle at 20% 80%, rgba(116, 24, 71, 0.15) 0%, transparent 50%),
                               radial-gradient(circle at 80% 20%, rgba(7, 55, 99, 0.15) 0%, transparent 50%);
         }
-        
-        /* Sidebar */
+    
         .sidebar {
             width: 250px;
             background: rgba(7, 55, 99, 0.1);
@@ -88,7 +87,6 @@
             transform: scale(1.1);
         }
     
-        /* Main Content */
         .main-content {
             flex: 1;
             margin-left: 250px;
@@ -131,38 +129,44 @@
         }
         
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(116, 24, 71, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(116, 24, 71, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(116, 24, 71, 0); }
+            0% {
+                box-shadow: 0 0 0 0 rgba(116, 24, 71, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(116, 24, 71, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(116, 24, 71, 0);
+            }
         }
         
         @keyframes rotate-glow {
-            0% { 
-                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7), 
+            0% {
+                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7),
                            0 0 20px rgba(116, 24, 71, 0.5),
                            0 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(0deg);
             }
-            25% { 
-                box-shadow: 10px 0 10px rgba(116, 24, 71, 0.7), 
+            25% {
+                box-shadow: 10px 0 10px rgba(116, 24, 71, 0.7),
                            20px 0 20px rgba(116, 24, 71, 0.5),
                            30px 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(90deg);
             }
-            50% { 
-                box-shadow: 0 10px 10px rgba(116, 24, 71, 0.7), 
+            50% {
+                box-shadow: 0 10px 10px rgba(116, 24, 71, 0.7),
                            0 20px 20px rgba(116, 24, 71, 0.5),
                            0 30px 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(180deg);
             }
-            75% { 
-                box-shadow: -10px 0 10px rgba(116, 24, 71, 0.7), 
+            75% {
+                box-shadow: -10px 0 10px rgba(116, 24, 71, 0.7),
                            -20px 0 20px rgba(116, 24, 71, 0.5),
                            -30px 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(270deg);
             }
-            100% { 
-                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7), 
+            100% {
+                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7),
                            0 0 20px rgba(116, 24, 71, 0.5),
                            0 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(360deg);
@@ -179,7 +183,6 @@
             font-size: 0.9rem;
         }
         
-        /* Glassmorphism Cards */
         .card {
             background: rgba(7, 55, 99, 0.1);
             backdrop-filter: blur(10px);
@@ -198,7 +201,6 @@
             background: rgba(7, 55, 99, 0.15);
         }
         
-        /* Animasi fade in */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -209,7 +211,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Shortcut Buttons */
         .shortcut-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -307,7 +308,6 @@
             text-align: center;
         }
         
-        /* Section Headers */
         .section-header {
             display: flex;
             justify-content: space-between;
@@ -346,7 +346,6 @@
             transform: translateX(3px);
         }
         
-        /* Pengajuan List */
         .pengajuan-list {
             display: grid;
             gap: 15px;
@@ -434,7 +433,6 @@
             color: var(--accent);
         }
         
-        /* Notifikasi Revisi */
         .revisi-item {
             padding: 15px;
             border-radius: 8px;
@@ -489,7 +487,6 @@
             transform: scale(1.1);
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 width: 70px;
@@ -545,13 +542,11 @@
                 transform: scale(1.1);
             }
         }
-        
-        /* Menu toggle untuk mobile */
+
         .menu-toggle {
             display: none;
         }
-        
-        /* Feedback animasi saat mengklik */
+
         .click-feedback {
             animation: clickEffect 0.3s ease;
         }

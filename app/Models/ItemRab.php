@@ -11,11 +11,6 @@ class ItemRab extends Model
 
     protected $table = 'item_rab';
     protected $primaryKey = 'item_rab_id';
-
-    /**
-     * --- TAMBAHKAN INI ---
-     * Atribut yang dapat diisi secara massal.
-     */
     protected $fillable = [
         'pengajuan_id',
         'nama_item',

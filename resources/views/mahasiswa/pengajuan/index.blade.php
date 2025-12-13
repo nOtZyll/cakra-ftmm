@@ -31,7 +31,6 @@
                               radial-gradient(circle at 80% 20%, rgba(7, 55, 99, 0.15) 0%, transparent 50%);
         }
         
-        /* Sidebar */
         .sidebar {
             width: 250px;
             background: rgba(7, 55, 99, 0.1);
@@ -88,7 +87,6 @@
             transform: scale(1.1);
         }
         
-        /* Main Content */
         .main-content {
             flex: 1;
             margin-left: 250px;
@@ -131,38 +129,44 @@
         }
         
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(116, 24, 71, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(116, 24, 71, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(116, 24, 71, 0); }
+            0% {
+                box-shadow: 0 0 0 0 rgba(116, 24, 71, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(116, 24, 71, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(116, 24, 71, 0);
+            }
         }
         
         @keyframes rotate-glow {
-            0% { 
-                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7), 
+            0% {
+                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7),
                            0 0 20px rgba(116, 24, 71, 0.5),
                            0 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(0deg);
             }
-            25% { 
-                box-shadow: 10px 0 10px rgba(116, 24, 71, 0.7), 
+            25% {
+                box-shadow: 10px 0 10px rgba(116, 24, 71, 0.7),
                            20px 0 20px rgba(116, 24, 71, 0.5),
                            30px 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(90deg);
             }
-            50% { 
-                box-shadow: 0 10px 10px rgba(116, 24, 71, 0.7), 
+            50% {
+                box-shadow: 0 10px 10px rgba(116, 24, 71, 0.7),
                            0 20px 20px rgba(116, 24, 71, 0.5),
                            0 30px 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(180deg);
             }
-            75% { 
-                box-shadow: -10px 0 10px rgba(116, 24, 71, 0.7), 
+            75% {
+                box-shadow: -10px 0 10px rgba(116, 24, 71, 0.7),
                            -20px 0 20px rgba(116, 24, 71, 0.5),
                            -30px 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(270deg);
             }
-            100% { 
-                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7), 
+            100% {
+                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7),
                            0 0 20px rgba(116, 24, 71, 0.5),
                            0 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(360deg);
@@ -179,7 +183,6 @@
             font-size: 0.9rem;
         }
         
-        /* Glassmorphism Cards */
         .card {
             background: rgba(7, 55, 99, 0.1);
             backdrop-filter: blur(10px);
@@ -198,7 +201,6 @@
             background: rgba(7, 55, 99, 0.15);
         }
         
-        /* Animasi fade in */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -209,7 +211,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Page Header */
         .page-header {
             margin-bottom: 30px;
         }
@@ -228,7 +229,6 @@
             margin-bottom: 20px;
         }
         
-        /* Filter Section */
         .filter-section {
             display: flex;
             gap: 15px;
@@ -264,7 +264,6 @@
             box-shadow: 0 0 0 2px rgba(116, 24, 71, 0.2);
         }
         
-        /* Table Styles */
         .table-container {
             overflow-x: auto;
             border-radius: 12px;
@@ -302,7 +301,6 @@
             background: rgba(7, 55, 99, 0.05);
         }
         
-        /* Status Badges */
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -336,7 +334,6 @@
             border: 1px solid rgba(255, 152, 0, 0.3);
         }
         
-        /* Action Buttons */
         .action-btn {
             display: inline-flex;
             align-items: center;
@@ -376,7 +373,6 @@
             margin-right: 5px;
         }
         
-        /* Empty State */
         .empty-state {
             text-align: center;
             padding: 40px 20px;
@@ -389,7 +385,6 @@
             opacity: 0.5;
         }
         
-        /* Pagination */
         .pagination {
             display: flex;
             justify-content: center;
@@ -417,10 +412,8 @@
             border-color: var(--accent);
         }
         
-        /* Modal untuk konfirmasi navigasi */
         .modal {
             display: none;
-            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -474,7 +467,6 @@
             transform: translateY(-2px);
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 width: 70px;
@@ -543,12 +535,10 @@
             }
         }
         
-        /* Menu toggle untuk mobile */
         .menu-toggle {
             display: none;
         }
         
-        /* Feedback animasi saat mengklik */
         .click-feedback {
             animation: clickEffect 0.3s ease;
         }
@@ -796,7 +786,7 @@
                 if (page === 'keluar') {
                     showModal('Konfirmasi Keluar', 'Apakah Anda yakin ingin keluar dari sistem?', 'logout');
                 } else {
-                    showModal(`Navigasi ke ${page.charAt(0).toUpperCase() + page.slice(1)}`, 
+                    showModal(`Navigasi ke ${page.charAt(0).toUpperCase() + page.slice(1)}`,
                              `Anda akan diarahkan ke halaman ${page}.`, `navigate-${page}`);
                 }
             });

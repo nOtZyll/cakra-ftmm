@@ -12,11 +12,13 @@ class JenisSurat extends Model
     protected $primaryKey = 'jenis_surat_id';
     protected $fillable = ['nama_jenis'];
 
-    public function pengajuan() {
+    public function pengajuan()
+    {
         return $this->hasMany(Pengajuan::class, 'jenis_surat_id', 'jenis_surat_id');
     }
 
-    public function templateDokumen() {
+    public function templateDokumen()
+    {
         return $this->hasMany(TemplateDokumen::class, 'jenis_surat_id', 'jenis_surat_id');
     }
 }

@@ -131,38 +131,44 @@
         }
         
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(116, 24, 71, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(116, 24, 71, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(116, 24, 71, 0); }
+            0% {
+                box-shadow: 0 0 0 0 rgba(116, 24, 71, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(116, 24, 71, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(116, 24, 71, 0);
+            }
         }
         
         @keyframes rotate-glow {
-            0% { 
-                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7), 
+            0% {
+                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7),
                            0 0 20px rgba(116, 24, 71, 0.5),
                            0 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(0deg);
             }
-            25% { 
-                box-shadow: 10px 0 10px rgba(116, 24, 71, 0.7), 
+            25% {
+                box-shadow: 10px 0 10px rgba(116, 24, 71, 0.7),
                            20px 0 20px rgba(116, 24, 71, 0.5),
                            30px 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(90deg);
             }
-            50% { 
-                box-shadow: 0 10px 10px rgba(116, 24, 71, 0.7), 
+            50% {
+                box-shadow: 0 10px 10px rgba(116, 24, 71, 0.7),
                            0 20px 20px rgba(116, 24, 71, 0.5),
                            0 30px 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(180deg);
             }
-            75% { 
-                box-shadow: -10px 0 10px rgba(116, 24, 71, 0.7), 
+            75% {
+                box-shadow: -10px 0 10px rgba(116, 24, 71, 0.7),
                            -20px 0 20px rgba(116, 24, 71, 0.5),
                            -30px 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(270deg);
             }
-            100% { 
-                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7), 
+            100% {
+                box-shadow: 0 0 10px rgba(116, 24, 71, 0.7),
                            0 0 20px rgba(116, 24, 71, 0.5),
                            0 0 30px rgba(116, 24, 71, 0.3);
                 transform: scale(1.05) rotate(360deg);
@@ -179,7 +185,6 @@
             font-size: 0.9rem;
         }
         
-        /* Glassmorphism Cards */
         .card {
             background: rgba(7, 55, 99, 0.1);
             backdrop-filter: blur(10px);
@@ -198,7 +203,6 @@
             background: rgba(7, 55, 99, 0.15);
         }
         
-        /* Animasi fade in */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -209,7 +213,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Form Styles */
         .form-container {
             max-width: 800px;
             margin: 0 auto;
@@ -282,7 +285,6 @@
             margin-right: 5px;
         }
         
-        /* Table Styles */
         .table-container {
             overflow-x: auto;
             margin-bottom: 20px;
@@ -336,7 +338,6 @@
             border-radius: 0 0 8px 8px;
         }
         
-        /* Button Styles */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -395,7 +396,6 @@
             font-size: 18px;
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 width: 70px;
@@ -456,12 +456,10 @@
             }
         }
         
-        /* Menu toggle untuk mobile */
         .menu-toggle {
             display: none;
         }
         
-        /* Feedback animasi saat mengklik */
         .click-feedback {
             animation: clickEffect 0.3s ease;
         }
@@ -546,7 +544,13 @@
                             </tr>
                             @endforeach
                         </tbody>
-                         {{-- ... (tfoot tidak berubah) ... --}}
+                         <tfoot>
+                            <tr>
+                                <td colspan="4" style="text-align: right; font-weight: bold; padding-right: 15px; border-top: 2px solid rgba(116, 24, 71, 0.3);">Total:</td>
+                                <td id="grandTotal" style="font-weight: bold; color: #741847; border-top: 2px solid rgba(116, 24, 71, 0.3); white-space: nowrap;">Rp 0</td>
+                                <td style="border-top: 2px solid rgba(116, 24, 71, 0.3);"></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
                 <button type="button" onclick="tambahBaris()" class="btn btn-outline mt-3">Tambah Item</button>
@@ -560,7 +564,7 @@
     </div>
 
     <script>
-        let rowIndex = 1;
+        let rowIndex = {{ count(old('items', $pengajuan->itemsRab)) }};
         
         document.addEventListener('DOMContentLoaded', function() {
             // ... (Kode toggle sidebar Anda)
